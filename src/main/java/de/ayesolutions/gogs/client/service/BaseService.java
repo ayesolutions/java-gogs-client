@@ -11,7 +11,7 @@ public class BaseService {
 
     private GogsClient client;
 
-    private BaseService(GogsClient client) {
+    protected BaseService(GogsClient client) {
         this.client = client;
     }
 
