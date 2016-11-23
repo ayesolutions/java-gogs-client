@@ -1,3 +1,5 @@
-# java-gogs-client
+# Java REST client for Go Git Service
 
-Java REST client for Gogs.
+A java client for the Go Git Service API.
+
+Tested again Gogs version > 0.9 (API V1)
