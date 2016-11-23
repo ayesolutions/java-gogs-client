@@ -10,7 +10,7 @@ plugins {
 }
 
 group = "de.ayesolutions.gogs"
-version = "1.0"
+version = "1.0-SNAPSHOT"
 description = "Java REST client for Gogs Service"
 
 apply plugin: 'java'
@@ -23,6 +23,7 @@ apply plugin: 'findbugs'
 apply plugin: 'checkstyle'
 apply plugin: 'jacoco'
 apply plugin: 'cpd'
+apply plugin: 'maven-publish'
 
 test {
     reports.html.enabled = false
@@ -50,6 +51,23 @@ jacocoTestReport {
 repositories {
 	jcenter()
     mavenCentral()
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+    repositories {
+        maven {
+            credentials {
+                username System.getenv('MAVEN_USER')
+                password System.getenv('MAVEN_PASS')
+            }
+            url "http://helios.asnet.aye-solutions.de:8123/artifactory/libs-snapshot-local"
+        }
+    }
 }
 
 dependencies {

@@ -24,5 +24,10 @@ node('master') {
 
     stage('Package') {
         sh './gradlew jar'
+        fingerprint 'build/libs/*.jar'
+    }
+
+    stage('Deploy') {
+        sh './gradlew publish'
     }
 }
