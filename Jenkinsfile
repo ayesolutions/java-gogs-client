@@ -10,7 +10,7 @@ node('master') {
     }
 
     stage('Test') {
-        sh './gradlew pmdMain javadoc jdependMain findbugsMain checkstyleMain cpdCheck'
+        sh './gradlew test jacocoTestReport pmdMain javadoc jdependMain findbugsMain checkstyleMain cpdCheck'
         junit '**/test-results/*.xml'
         step([$class: 'JacocoPublisher'])
         step([$class: 'JavadocArchiver', javadocDir: 'build/docs/javadoc', keepAll: true])
