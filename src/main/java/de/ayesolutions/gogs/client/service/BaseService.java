@@ -1,6 +1,10 @@
 package de.ayesolutions.gogs.client.service;
 
 import de.ayesolutions.gogs.client.GogsClient;
+import de.ayesolutions.gogs.client.GogsClientException;
+
+import javax.ws.rs.core.GenericType;
+import javax.ws.rs.core.Response;
 
 /**
  * base gogs service class.
@@ -17,5 +21,21 @@ public class BaseService {
 
     public GogsClient getClient() {
         return client;
+    }
+
+    public void handleResponse(Response response, int statusCode) {
+        if (response.getStatus() != statusCode) {
+            throw new GogsClientException(GogsClientException.createMessage(response));
+        }
+    }
+
+    public <T> T handleResponse(Response response, GenericType<T> clazz, int statusCode) {
+        handleResponse(response, statusCode);
+        return response.readEntity(clazz);
+    }
+
+    public <T> T handleResponse(Response response, Class<T> clazz, int statusCode) {
+        handleResponse(response, statusCode);
+        return response.readEntity(clazz);
     }
 }

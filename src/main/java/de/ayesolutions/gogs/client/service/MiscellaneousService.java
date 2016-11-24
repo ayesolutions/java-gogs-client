@@ -1,7 +1,6 @@
 package de.ayesolutions.gogs.client.service;
 
 import de.ayesolutions.gogs.client.GogsClient;
-import de.ayesolutions.gogs.client.GogsClientException;
 import de.ayesolutions.gogs.client.model.Markdown;
 
 import javax.ws.rs.client.Entity;
@@ -26,8 +25,9 @@ public final class MiscellaneousService extends BaseService {
 
     /**
      * render markdown.
-     * <p>
-     * https://github.com/gogits/go-gogs-client/wiki/Miscellaneous#render-an-arbitrary-markdown-document
+     *
+     * GET /api/v1/markdown
+     * Response 200, 500
      *
      * @param markdown markdown definition.
      * @return html rendered markdown.
@@ -39,17 +39,14 @@ public final class MiscellaneousService extends BaseService {
                 .request(MediaType.APPLICATION_JSON_TYPE)
                 .post(entity);
 
-        if (response.getStatus() != 200) {
-            throw new GogsClientException(GogsClientException.createMessage(response));
-        }
-
-        return response.readEntity(String.class);
+        return handleResponse(response, String.class, 200);
     }
 
     /**
      * render markdown.
-     * <p>
-     * https://github.com/gogits/go-gogs-client/wiki/Miscellaneous#render-a-markdown-document-in-raw-mode
+     *
+     * GET /api/v1/markdown/raw
+     * Response 200, 500
      *
      * @param data text markdown.
      * @return html rendered markdown.
@@ -62,10 +59,6 @@ public final class MiscellaneousService extends BaseService {
                 .request(MediaType.TEXT_PLAIN_TYPE)
                 .post(entity);
 
-        if (response.getStatus() != 200) {
-            throw new GogsClientException(GogsClientException.createMessage(response));
-        }
-
-        return response.readEntity(String.class);
+        return handleResponse(response, String.class, 200);
     }
 }

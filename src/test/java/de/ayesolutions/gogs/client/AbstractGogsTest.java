@@ -10,6 +10,8 @@ import java.util.UUID;
  */
 public class AbstractGogsTest {
 
+    protected final static String SSH_KEY = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDberous+OJrJGvyqiEKX7pH2RNHCh1XZIwzsat3nwtefGneG+9SUGNb909VCdPE2BU1zSAYOoDl/jtSIuKJ6TFbsAVgABVBnKJ44K0cdA64zGXBLFlFwPD9knZl3/okcPyXE/+TDokoQsCg8VNdipM8FiMDlfeUEfrTCXTy5qMREXBAbPqLqetQ5g8i57jH1P5rbI9nrMSpuI+mfrpPL8AiXRlZhkObLNRlNR/zhmItM3LmVKjC6MtPfz7TPVjtQaApSu1HlpvroMhR6m394l1m4wnckI+ogkcg9bY0FxkmWc0OwYGnqOcYvfv4DrCCz4rkxK1ZIHX1CGAoiBacqY4+gsQdWvYVNIUaxMeLFt/M3kT6h5k1znTXF7bEAJwJJPdOTM3Fzhx1GeUVeWQOORxYGU90ZTkrV5przAuJpbpv9GX0vAiCCq+c3u62tlv8v9X7o2PmVfDlGEUE6LPlSDAbqYI6kv/1mDJuxlsYKGFWhLiYhafswEe4Cgipw0s1WgQj//qI5+9A+9z6JlquSUcsl7elEVJaEBViRpTGye3pOaeJTnZM/aKy2B+Du+4QoRZXTZTjojTOb45DwIijLq+elVAip/B8M7ytzPFj/St/IKv7noar0kORmYYSBdaue9nqpSqJFqSyv2o67PmpN+ddqw4dgIWkL5XsypgXLHIJw== christianaye@HEIMDALL.local";
+
     protected final static URI API_URI = URI.create("http://helios.asnet.aye-solutions.de:13001/api/v1");
 
     protected final static URI API_URI_INVALID = URI.create("http://helios.asnet.aye-solutions.de:13001/apii/v1");
@@ -25,6 +27,8 @@ public class AbstractGogsTest {
     protected final static String USERNAME_ADMIN = "gogs-admin";
 
     protected final static String USERNAME_USER = "gogs-user";
+
+    protected final static String USERNAME_UNKNOWN = "unknown";
 
     protected final static String PASSWORD = "pass";
 
