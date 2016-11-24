@@ -3,6 +3,7 @@ package de.ayesolutions.gogs.client;
 import de.ayesolutions.gogs.client.model.AccessToken;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
+import org.glassfish.jersey.client.HttpUrlConnectorProvider;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -53,7 +54,9 @@ public class GogsClient {
      */
     public GogsClient(final URI uri, final AccessToken accessToken) {
         this.clientConfig = new ClientConfig();
-        this.clientConfig.property(ClientProperties.SUPPRESS_HTTP_COMPLIANCE_VALIDATION, true);
+        this.clientConfig
+                .property(ClientProperties.SUPPRESS_HTTP_COMPLIANCE_VALIDATION, true)
+                .property(HttpUrlConnectorProvider.SET_METHOD_WORKAROUND, true);
         this.client = ClientBuilder.newClient(this.clientConfig);
         this.webTarget = client.target(uri);
         this.accessToken = accessToken;

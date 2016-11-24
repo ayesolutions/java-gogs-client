@@ -302,7 +302,7 @@ public class UserServiceTest extends AbstractGogsTest {
         Assert.assertEquals(USERNAME_USER, user.getUsername());
         Assert.assertEquals("info@aye-solutions.de", user.getEmail());
         Assert.assertEquals("Gogs User", user.getFullName());
-        Assert.assertTrue(!user.getAvatarUrl().isEmpty() && user.getAvatarUrl().startsWith("https://secure.gravatar.com/avatar/"));
+        Assert.assertTrue(!user.getAvatarUrl().isEmpty() && user.getAvatarUrl().startsWith(GRAVATAR_URL));
         Assert.assertTrue(user.getId() != 0);
     }
 }

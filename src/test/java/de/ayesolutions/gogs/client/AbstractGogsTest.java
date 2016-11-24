@@ -32,6 +32,8 @@ public class AbstractGogsTest {
 
     protected final static String PASSWORD = "pass";
 
+    protected final static String GRAVATAR_URL = "https://secure.gravatar.com/avatar/";
+
     protected String generateGUID() {
         return UUID.randomUUID().toString();
     }
