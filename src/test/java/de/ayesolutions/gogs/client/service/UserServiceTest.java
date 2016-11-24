@@ -15,6 +15,64 @@ import java.util.UUID;
 public class UserServiceTest extends AbstractGogsTest {
 
     @Test
+    public void createUser() throws Exception {
+        UserService service = new UserService(API_ADMIN);
+
+        String uid = UUID.randomUUID().toString().substring(0, 10);
+
+        User user = new User();
+        user.setUsername(uid);
+        user.setPassword("pass");
+        user.setEmail(uid + "@aye-solutions.de");
+        user.setFullName(uid + " - test");
+        user = service.createUser(user);
+        Assert.assertNotNull(user.getId());
+        Assert.assertEquals(uid, user.getUsername());
+        Assert.assertEquals(uid + "@aye-solutions.de", user.getEmail());
+        Assert.assertEquals(uid + " - test", user.getFullName());
+        Assert.assertTrue(user.getPassword() == null || user.getPassword().isEmpty());
+
+        Assert.assertTrue(service.deleteUser(uid));
+    }
+
+    @Test
+    public void updateUser() throws Exception {
+        UserService service = new UserService(API_ADMIN);
+
+        String uid = UUID.randomUUID().toString().substring(0, 10);
+
+        User user = new User();
+        user.setUsername(uid);
+        user.setPassword("pass");
+        user.setEmail(uid + "@aye-solutions.de");
+        user.setFullName(uid + " - test");
+        user = service.createUser(user);
+        Assert.assertNotNull(user.getId());
+
+        user = service.updateUser(uid, user);
+        Assert.assertNotNull(user.getId());
+
+        Assert.assertTrue(service.deleteUser(uid));
+    }
+
+    @Test
+    public void deleteUser() throws Exception {
+        UserService service = new UserService(API_ADMIN);
+
+        String uid = UUID.randomUUID().toString().substring(0, 10);
+
+        User user = new User();
+        user.setUsername(uid);
+        user.setPassword("pass");
+        user.setEmail(uid + "@aye-solutions.de");
+        user.setFullName(uid + " - test");
+        user = service.createUser(user);
+        Assert.assertNotNull(user.getId());
+
+        Assert.assertTrue(service.deleteUser(uid));
+    }
+
+    @Test
     public void createToken() throws Exception {
         String uuid = generateGUID();
         UserService service = new UserService(API_USER);

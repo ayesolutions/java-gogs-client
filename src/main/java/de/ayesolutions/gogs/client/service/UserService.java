@@ -30,6 +30,72 @@ public class UserService extends BaseService {
     }
 
     /**
+     * create new user.
+     * <p>
+     * POST /api/v1/admin/users
+     * Response 201, 422, 500
+     *
+     * @param user user.
+     * @return created user.
+     */
+    public User createUser(final User user) {
+        Response response = getClient().getWebTarget()
+                .path("admin").path("users")
+                .request()
+                .header("Authorization", getClient().getAccessToken().getTokenAuthorization())
+                .post(Entity.json(user));
+
+        return handleResponse(response, User.class, Response.Status.CREATED.getStatusCode());
+    }
+
+    /**
+     * update user information.
+     * <p>
+     * PATCH /api/v1/admin/users/:username
+     * Response 200, 404, 422, 500
+     *
+     * @param user user
+     * @return updated user.
+     */
+    public User updateUser(final String username, final User user) {
+        Response response = getClient().getWebTarget()
+                .path("admin").path("users").path(username)
+                .request()
+                .header("Authorization", getClient().getAccessToken().getTokenAuthorization())
+                .method("PATCH", Entity.json(user));
+
+        if (response.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
+            return null;
+        }
+
+        return handleResponse(response, User.class, Response.Status.OK.getStatusCode());
+    }
+
+    /**
+     * delete user.
+     * <p>
+     * DELETE /api/v1/admin/users/:username
+     * Response 204, 404, 422, 500
+     *
+     * @return true if successful otherwise false.
+     */
+    public Boolean deleteUser(final String username) {
+        Response response = getClient().getWebTarget()
+                .path("admin").path("users").path(username)
+                .request()
+                .header("Authorization", getClient().getAccessToken().getTokenAuthorization())
+                .delete();
+
+        if (response.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
+            return false;
+        }
+
+        handleResponse(response, Response.Status.NO_CONTENT.getStatusCode());
+
+        return true;
+    }
+
+    /**
      * list all user access tokens.
      * <p>
      * PUT /api/v1/users/:username/tokens (BASIC AUTHORIZATION)
