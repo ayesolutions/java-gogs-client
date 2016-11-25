@@ -1,11 +1,8 @@
 package de.ayesolutions.gogs.client.service;
 
 import de.ayesolutions.gogs.client.GogsClient;
+import de.ayesolutions.gogs.client.GogsClientException;
 import de.ayesolutions.gogs.client.model.Markdown;
-
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 /**
  * miscellaneous server functions.
@@ -27,38 +24,25 @@ public final class MiscellaneousService extends BaseService {
      * render markdown.
      *
      * GET /api/v1/markdown
-     * Response 200, 500
      *
      * @param markdown markdown definition.
      * @return html rendered markdown.
+     * @throws GogsClientException
      */
-    public String renderMarkdown(final Markdown markdown) {
-        Entity<Markdown> entity = Entity.json(markdown);
-        Response response = getClient().getWebTarget()
-                .path("markdown")
-                .request(MediaType.APPLICATION_JSON_TYPE)
-                .post(entity);
-
-        return handleResponse(response, String.class, 200);
+    public String renderMarkdown(final Markdown markdown) throws GogsClientException {
+        return getClient().post(String.class, markdown, "markdown");
     }
 
     /**
      * render markdown.
      *
      * GET /api/v1/markdown/raw
-     * Response 200, 500
      *
      * @param data text markdown.
      * @return html rendered markdown.
+     * @throws GogsClientException
      */
-    public String renderMarkdownRaw(final String data) {
-        Entity<String> entity = Entity.text(data);
-        Response response = getClient().getWebTarget()
-                .path("markdown")
-                .path("raw")
-                .request(MediaType.TEXT_PLAIN_TYPE)
-                .post(entity);
-
-        return handleResponse(response, String.class, 200);
+    public String renderMarkdownRaw(final String data) throws GogsClientException {
+        return getClient().post(String.class, data, "markdown", "raw");
     }
 }

@@ -5,4 +5,8 @@ package de.ayesolutions.gogs.client;
  */
 public class GogsClientTest extends AbstractGogsTest {
 
+    @Override
+    public void createDummyObjects() {
+
+    }
 }

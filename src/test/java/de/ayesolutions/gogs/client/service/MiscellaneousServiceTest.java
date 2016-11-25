@@ -5,24 +5,28 @@ import de.ayesolutions.gogs.client.GogsClientException;
 import de.ayesolutions.gogs.client.model.Markdown;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 
 /**
  * @author Christian Aye - c.aye@aye-solutions.de
  */
-@RunWith(JUnit4.class)
 public class MiscellaneousServiceTest extends AbstractGogsTest {
+
+    private MiscellaneousService service = new MiscellaneousService(API_USER);
+    ;
+
+    private Markdown dummyMarkdown;
+
+    @Override
+    public void createDummyObjects() {
+        dummyMarkdown = new Markdown();
+        dummyMarkdown.setContext("ayesolutions/java-ci-example");
+        dummyMarkdown.setMode("html");
+        dummyMarkdown.setText("# test");
+    }
 
     @Test
     public void renderMarkdown() throws Exception {
-        Markdown markdown = new Markdown();
-        markdown.setContext("ayesolutions/java-ci-example");
-        markdown.setMode("html");
-        markdown.setText("# test");
-
-        MiscellaneousService service = new MiscellaneousService(API_ADMIN);
-        String content = service.renderMarkdown(markdown);
+        String content = service.renderMarkdown(dummyMarkdown);
 
         Assert.assertNotNull(content);
         Assert.assertTrue(content.startsWith("<h1>test</h1>"));
@@ -30,18 +34,12 @@ public class MiscellaneousServiceTest extends AbstractGogsTest {
 
     @Test(expected = GogsClientException.class)
     public void renderMarkdownInvalid() throws Exception {
-        Markdown markdown = new Markdown();
-        markdown.setContext("ayesolutions/java-ci-example");
-        markdown.setMode("html");
-        markdown.setText("# test");
-
         MiscellaneousService service = new MiscellaneousService(API_INVALID);
-        service.renderMarkdown(markdown);
+        service.renderMarkdown(dummyMarkdown);
     }
 
     @Test
     public void renderMarkdownRaw() throws Exception {
-        MiscellaneousService service = new MiscellaneousService(API_ADMIN);
         String content = service.renderMarkdownRaw("# test");
 
         Assert.assertNotNull(content);

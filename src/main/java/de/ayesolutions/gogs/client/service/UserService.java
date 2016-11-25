@@ -5,20 +5,18 @@ import de.ayesolutions.gogs.client.GogsClientException;
 import de.ayesolutions.gogs.client.model.*;
 
 import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.Invocation;
-import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.GenericType;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Gogs user service call class.
  *
  * @author Christian Aye - c.aye@aye-solutions.de
  */
-public class UserService extends BaseService {
+public final class UserService extends BaseService {
 
     /**
      * default constructor.
@@ -30,557 +28,318 @@ public class UserService extends BaseService {
     }
 
     /**
-     * create new user.
-     * <p>
-     * POST /api/v1/admin/users
-     * Response 201, 422, 500
-     *
-     * @param user user.
-     * @return created user.
-     */
-    public User createUser(final User user) {
-        Response response = getClient().getWebTarget()
-                .path("admin").path("users")
-                .request()
-                .header("Authorization", getClient().getAccessToken().getTokenAuthorization())
-                .post(Entity.json(user));
-
-        return handleResponse(response, User.class, Response.Status.CREATED.getStatusCode());
-    }
-
-    /**
-     * update user information.
-     * <p>
-     * PATCH /api/v1/admin/users/:username
-     * Response 200, 404, 422, 500
-     *
-     * @param user user
-     * @return updated user.
-     */
-    public User updateUser(final String username, final User user) {
-        Response response = getClient().getWebTarget()
-                .path("admin").path("users").path(username)
-                .request()
-                .header("Authorization", getClient().getAccessToken().getTokenAuthorization())
-                .method("PATCH", Entity.json(user));
-
-        if (response.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
-            return null;
-        }
-
-        return handleResponse(response, User.class, Response.Status.OK.getStatusCode());
-    }
-
-    /**
-     * delete user.
-     * <p>
-     * DELETE /api/v1/admin/users/:username
-     * Response 204, 404, 422, 500
-     *
-     * @return true if successful otherwise false.
-     */
-    public Boolean deleteUser(final String username) {
-        Response response = getClient().getWebTarget()
-                .path("admin").path("users").path(username)
-                .request()
-                .header("Authorization", getClient().getAccessToken().getTokenAuthorization())
-                .delete();
-
-        if (response.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
-            return false;
-        }
-
-        handleResponse(response, Response.Status.NO_CONTENT.getStatusCode());
-
-        return true;
-    }
-
-    /**
      * list all user access tokens.
      * <p>
-     * PUT /api/v1/users/:username/tokens (BASIC AUTHORIZATION)
-     * Reponse 200, 500
+     * GET /api/v1/users/:username/tokens
      *
      * @param username username.
      * @return list of user access tokens.
+     * @throws GogsClientException
      */
-    public List<AccessToken> listAccessTokens(final String username) {
-        if (getClient().getAccessToken() == null) {
-            throw new GogsClientException("no access token available");
-        }
-
+    public List<AccessToken> listAccessTokens(final String username) throws GogsClientException {
         Response response = getClient().getWebTarget()
                 .path("users").path(username).path("tokens")
-                .request(MediaType.APPLICATION_JSON_TYPE)
-                .header("Authorization", getClient().getAccessToken().getBasicAuthorization())
+                .request().header("Authorization", getClient().getAccessToken().getBasicAuthorization())
                 .get();
 
-        return handleResponse(response, new GenericType<List<AccessToken>>() {
-        }, Response.Status.OK.getStatusCode());
+        if (response == null) {
+            throw new GogsClientException("no response");
+        }
+
+        if (!(response.getStatus() == 200)) {
+            throw new GogsClientException("unknown error");
+        }
+
+        return response.readEntity(new GenericType<List<AccessToken>>() {
+        });
     }
 
     /**
      * create new access token for user.
      * <p>
-     * POST /api/v1/users/:username/tokens (BASIC AUTHORIZATION)
-     * Reponse 201, 500
+     * POST /api/v1/users/:username/tokens
      *
      * @param name name of access token.
      * @return new generated access token.
+     * @throws GogsClientException
      */
-    public AccessToken createToken(final String username, final String name) {
-        if (getClient().getAccessToken() == null) {
-            throw new GogsClientException("no access token available");
-        }
-
-        Entity<AccessToken> entity = Entity.json(new AccessToken(name, null));
+    public AccessToken createToken(final String username, final String name) throws GogsClientException {
         Response response = getClient().getWebTarget()
                 .path("users").path(username).path("tokens")
-                .request(MediaType.APPLICATION_JSON_TYPE)
-                .header("Authorization", getClient().getAccessToken().getBasicAuthorization())
-                .post(entity);
+                .request().header("Authorization", getClient().getAccessToken().getBasicAuthorization())
+                .post(Entity.json(new AccessToken(name, null)));
 
-        return handleResponse(response, AccessToken.class, Response.Status.CREATED.getStatusCode());
+        if (response == null) {
+            throw new GogsClientException("no response");
+        }
+
+        if (!(response.getStatus() == 201)) {
+            throw new GogsClientException("unknown error");
+        }
+
+        return response.readEntity(AccessToken.class);
     }
 
     /**
      * search for users.
      * <p>
-     * GET /api/v1/users/search (UNAUTHORIZED AND BASIC AUTHORIZATION)
-     * Reponse 200, 500
+     * GET /api/v1/users/search
      *
-     * @param query search string
-     * @return list of users
+     * @param query search string.
+     * @return list of users.
+     * @throws GogsClientException
      */
-    public UserSearchResult search(final String query) {
+    public UserSearchResult search(final String query) throws GogsClientException {
         return search(query, 0);
     }
 
     /**
      * search for users.
      * <p>
-     * GET /api/v1/users/search (UNAUTHORIZED AND BASIC AUTHORIZATION)
-     * Reponse 200, 500
+     * GET /api/v1/users/search
      *
      * @param query search string.
      * @param limit limit number of search result.
      * @return list of users.
+     * @throws GogsClientException
      */
-    public UserSearchResult search(final String query, final int limit) {
-        WebTarget webTarget = getClient().getWebTarget()
-                .path("users").path("search");
+    public UserSearchResult search(final String query, final int limit) throws GogsClientException {
+        Map<String, String> parameters = new HashMap<>();
+        parameters.put("q", query);
+        parameters.put("limit", String.valueOf(limit));
 
-        webTarget = webTarget.queryParam("q", query);
-
-        if (limit > 0) {
-            webTarget = webTarget.queryParam("limit", limit);
-        }
-
-        Invocation.Builder builder = webTarget.request();
-        if (getClient().getAccessToken() != null) {
-            builder.header("Authorization", getClient().getAccessToken().getBasicAuthorization());
-        }
-
-        Response response = builder.get();
-
-        if (response.getStatus() != Response.Status.OK.getStatusCode()) {
-            throw new GogsClientException(GogsClientException.createMessage(response));
-        }
-
-        UserSearchResult result = response.readEntity(UserSearchResult.class);
-
-        return result;
+        return getClient().get(UserSearchResult.class, parameters, "users", "search");
     }
 
     /**
      * get user info for specified user.
      * <p>
-     * GET /api/v1/users/:username (UNAUTHORIZED AND BASIC AUTHORIZATION)
-     * Response 200, 404, 500
+     * GET /api/v1/users/:username
      *
      * @param username name of user.
      * @return user info.
+     * @throws GogsClientException
      */
-    public User getInfo(final String username) {
-        WebTarget webTarget = getClient().getWebTarget()
-                .path("users").path(username);
-
-        Invocation.Builder builder = webTarget.request();
-        if (getClient().getAccessToken() != null) {
-            builder.header("Authorization", getClient().getAccessToken().getBasicAuthorization());
-        }
-
-        Response response = builder.get();
-
-        return handleResponse(response, User.class, Response.Status.OK.getStatusCode());
+    public User getInfo(final String username) throws GogsClientException {
+        return getClient().get(User.class, "users", username);
     }
 
     /**
      * get public key list of specified user.
      * <p>
-     * GET /api/v1/users/:username/keys (TOKEN AUTHORIZATION)
-     * Response 200, 404, 500
+     * GET /api/v1/users/:username/keys
      *
      * @param username name of user.
      * @return list of public keys.
+     * @throws GogsClientException
      */
-    public List<PublicKey> listPublicKeys(final String username) {
-        Response response = getClient().getWebTarget()
-                .path("users").path(username).path("keys")
-                .request()
-                .header("Authorization", getClient().getAccessToken().getTokenAuthorization())
-                .get();
-
-        if (response.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
-            return Collections.emptyList();
-        }
-
-        return handleResponse(response, new GenericType<List<PublicKey>>() {
-        }, Response.Status.OK.getStatusCode());
+    public List<PublicKey> listPublicKeys(final String username) throws GogsClientException {
+        return getClient().get(new GenericType<List<PublicKey>>() {
+        }, "users", username, "keys");
     }
 
     /**
      * get user list of users who follows specified user.
      * <p>
-     * GET /api/v1/users/:username/followers (TOKEN AUTHORIZATION)
-     * Response 200, 404, 500
+     * GET /api/v1/users/:username/followers
      *
      * @param username name of user.
      * @return list of followers.
+     * @throws GogsClientException
      */
-    public List<User> listFollowers(final String username) {
-        Response response = getClient().getWebTarget()
-                .path("users").path(username).path("followers")
-                .request()
-                .header("Authorization", getClient().getAccessToken().getTokenAuthorization())
-                .get();
-
-        if (response.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
-            return Collections.emptyList();
-        }
-
-        return handleResponse(response, new GenericType<List<User>>() {
-        }, Response.Status.OK.getStatusCode());
+    public List<User> listFollowers(final String username) throws GogsClientException {
+        return getClient().get(new GenericType<List<User>>() {
+        }, "users", username, "followers");
     }
 
     /**
      * get user list of users who follows signed in user.
      * <p>
-     * GET /api/v1/user/followers (TOKEN AUTHORIZATION)
-     * Response 200, 500
+     * GET /api/v1/user/followers
      *
      * @return list of followers.
+     * @throws GogsClientException
      */
-    public List<User> listFollowers() {
-        Response response = getClient().getWebTarget()
-                .path("user").path("followers")
-                .request()
-                .header("Authorization", getClient().getAccessToken().getTokenAuthorization())
-                .get();
-
-        return handleResponse(response, new GenericType<List<User>>() {
-        }, Response.Status.OK.getStatusCode());
+    public List<User> listFollowers() throws GogsClientException {
+        return getClient().get(new GenericType<List<User>>() {
+        }, "user", "followers");
     }
 
     /**
      * get user list of specified user that follow others.
      * <p>
-     * GET /api/v1/users/following (TOKEN AUTHORIZATION)
-     * Response 200, 404, 500
+     * GET /api/v1/users/following
      *
      * @param username name of user.
      * @return list of users.
+     * @throws GogsClientException
      */
-    public List<User> listFollowing(final String username) {
-        Response response = getClient().getWebTarget()
-                .path("users").path(username).path("following")
-                .request()
-                .header("Authorization", getClient().getAccessToken().getTokenAuthorization())
-                .get();
-
-        if (response.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
-            return Collections.emptyList();
-        }
-
-        return handleResponse(response, new GenericType<List<User>>() {
-        }, Response.Status.OK.getStatusCode());
+    public List<User> listFollowing(final String username) throws GogsClientException {
+        return getClient().get(new GenericType<List<User>>() {
+        }, "user", username, "following");
     }
 
     /**
      * get user list of signed in user that follow others.
      * <p>
-     * GET /api/v1/user/following (TOKEN AUTHORIZATION)
-     * Response 200, 500
+     * GET /api/v1/user/following
      *
      * @return list of users.
+     * @throws GogsClientException
      */
-    public List<User> listFollowing() {
-        Response response = getClient().getWebTarget()
-                .path("user").path("following")
-                .request()
-                .header("Authorization", getClient().getAccessToken().getTokenAuthorization())
-                .get();
-
-        return handleResponse(response, new GenericType<List<User>>() {
-        }, Response.Status.OK.getStatusCode());
+    public List<User> listFollowing() throws GogsClientException {
+        return getClient().get(new GenericType<List<User>>() {
+        }, "user", "following");
     }
 
     /**
      * check if specified user follow another user.
      * <p>
-     * GET /api/v1/users/:username/following/:target (TOKEN AUTHORIZATION)
-     * Response 204, 404, 500
+     * GET /api/v1/users/:username/following/:target
      *
      * @param username       name of user to check.
      * @param targetUsername following user to check.
-     * @return true if username follow targetUsername otherwise false.
+     * @throws GogsClientException
      */
-    public Boolean checkFollowing(final String username, final String targetUsername) {
-        Response response = getClient().getWebTarget()
-                .path("users").path(username).path("following").path(targetUsername)
-                .request()
-                .header("Authorization", getClient().getAccessToken().getTokenAuthorization())
-                .get();
-
-        if (response.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
-            return false;
-        }
-
-        handleResponse(response, Response.Status.NO_CONTENT.getStatusCode());
-
-        return true;
+    public void checkFollowing(final String username, final String targetUsername) throws GogsClientException {
+        getClient().get(Void.class, "users", username, "following", targetUsername);
     }
 
     /**
      * check if signed in user follow another user.
      * <p>
-     * GET /api/v1/user/following/:target (TOKEN AUTHORIZATION)
-     * Response 204, 404, 500
+     * GET /api/v1/user/following/:target
      *
      * @param targetUsername following user to check.
-     * @return true if username follow targetUsername otherwise false.
+     * @throws GogsClientException
      */
-    public Boolean checkFollowing(final String targetUsername) {
-        Response response = getClient().getWebTarget()
-                .path("user").path("following").path(targetUsername)
-                .request()
-                .header("Authorization", getClient().getAccessToken().getTokenAuthorization())
-                .get();
-
-        if (response.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
-            return false;
-        }
-
-        handleResponse(response, Response.Status.NO_CONTENT.getStatusCode());
-
-        return true;
+    public void checkFollowing(final String targetUsername) throws GogsClientException {
+        getClient().get(Void.class, "user", "following", targetUsername);
     }
 
     /**
      * get signed in user info.
      * <p>
-     * GET /api/v1/user (TOKEN AUTHORIZATION)
-     * Response 200, 400
+     * GET /api/v1/user
      *
      * @return user info.
+     * @throws GogsClientException
      */
-    public User getUser() {
-        Response response = getClient().getWebTarget()
-                .path("user").request()
-                .header("Authorization", getClient().getAccessToken().getTokenAuthorization())
-                .get();
-
-        return handleResponse(response, User.class, Response.Status.OK.getStatusCode());
+    public User getUser() throws GogsClientException {
+        return getClient().get(User.class, "user");
     }
 
     /**
      * get registered user emails.
      * <p>
      * GET /api/v1/user/emails
-     * Response 200, 500
      *
      * @return list of emails.
+     * @throws GogsClientException
      */
-    public List<Email> listUserEmails() {
-        Response response = getClient().getWebTarget()
-                .path("user").path("emails")
-                .request()
-                .header("Authorization", getClient().getAccessToken().getTokenAuthorization())
-                .get();
-
-        return handleResponse(response, new GenericType<List<Email>>() {
-        }, Response.Status.OK.getStatusCode());
+    public List<Email> listUserEmails() throws GogsClientException {
+        return getClient().get(new GenericType<List<Email>>() {
+        }, "user", "emails");
     }
 
     /**
      * add new email address and return all registered emails.
      * <p>
      * PUT /api/v1/user/emails
-     * Response 201, 422, 500
      *
      * @param emailList list of emails to add.
      * @return list of emails.
+     * @throws GogsClientException
      */
-    public List<Email> addEmail(final EmailList emailList) {
-        Response response = getClient().getWebTarget()
-                .path("user").path("emails")
-                .request()
-                .header("Authorization", getClient().getAccessToken().getTokenAuthorization())
-                .post(Entity.json(emailList));
-
-        return handleResponse(response, new GenericType<List<Email>>() {
-        }, Response.Status.CREATED.getStatusCode());
+    public List<Email> addEmail(final EmailList emailList) throws GogsClientException {
+        return getClient().post(new GenericType<List<Email>>() {
+        }, emailList, "user", "emails");
     }
 
     /**
      * delete user email.
      * <p>
      * DELETE /api/v1/user/emails
-     * Response 204, 500
      *
      * @param emailList email list to delete.
-     * @return true if successful deleted.
+     * @throws GogsClientException
      */
-    public Boolean deleteEmail(final EmailList emailList) {
-        Response response = getClient().getWebTarget()
-                .path("user").path("emails")
-                .request(MediaType.APPLICATION_JSON_TYPE)
-                .header("Authorization", getClient().getAccessToken().getTokenAuthorization())
-                .method("DELETE", Entity.json(emailList));
-
-        handleResponse(response, Response.Status.NO_CONTENT.getStatusCode());
-
-        return true;
+    public void deleteEmail(final EmailList emailList) throws GogsClientException {
+        getClient().delete(emailList, "user", "emails");
     }
 
     /**
      * follow specified user.
      * <p>
      * PUT /api/v1/user/following/:target
-     * Response 204, 404, 500
      *
      * @param username name of user to follow.
-     * @return true if successful deleted otherwise false.
+     * @throws GogsClientException
      */
-    public Boolean follow(String username) {
-        Response response = getClient().getWebTarget()
-                .path("user").path("following").path(username)
-                .request(MediaType.TEXT_PLAIN_TYPE)
-                .header("Authorization", getClient().getAccessToken().getTokenAuthorization())
-                .put(Entity.text(""));
-
-        if (response.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
-            return false;
-        }
-
-        handleResponse(response, Response.Status.NO_CONTENT.getStatusCode());
-
-        return true;
+    public void follow(final String username) throws GogsClientException {
+        getClient().put(Void.class, null, "user", "following", username);
     }
 
     /**
      * unfollow specified user.
      * <p>
      * DELETE /api/v1/user/following/:target
-     * Response 204, 404, 500
      *
      * @param username name of user to unfollow.
-     * @return true if successful deleted otherwise false.
+     * @throws GogsClientException
      */
-    public Boolean unfollow(String username) {
-        Response response = getClient().getWebTarget()
-                .path("user").path("following").path(username)
-                .request()
-                .header("Authorization", getClient().getAccessToken().getTokenAuthorization())
-                .delete();
-
-        if (response.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
-            return false;
-        }
-
-        handleResponse(response, Response.Status.NO_CONTENT.getStatusCode());
-
-        return true;
+    public void unfollow(final String username) throws GogsClientException {
+        getClient().delete("user", "following", username);
     }
 
     /**
      * get public key list of signed in user.
      * <p>
      * GET /api/v1/user/keys
-     * Response 200, 500
      *
      * @return list of public keys.
+     * @throws GogsClientException
      */
-    public List<PublicKey> listPublicKeys() {
-        Response response = getClient().getWebTarget()
-                .path("user").path("keys")
-                .request()
-                .header("Authorization", getClient().getAccessToken().getTokenAuthorization())
-                .get();
-
-        return handleResponse(response, new GenericType<List<PublicKey>>() {
-        }, Response.Status.OK.getStatusCode());
+    public List<PublicKey> listPublicKeys() throws GogsClientException {
+        return getClient().get(new GenericType<List<PublicKey>>() {
+        }, "user", "keys");
     }
 
     /**
      * add new public key to signed in user.
      * <p>
      * POST /api/v1/user/keys
-     * Response 200, 500
      *
      * @param publicKey public key.
      * @return added public key.
+     * @throws GogsClientException
      */
-    public PublicKey addPublicKey(PublicKey publicKey) {
-        Response response = getClient().getWebTarget()
-                .path("user").path("keys")
-                .request(MediaType.APPLICATION_JSON_TYPE)
-                .header("Authorization", getClient().getAccessToken().getTokenAuthorization())
-                .post(Entity.json(publicKey));
-
-        return handleResponse(response, PublicKey.class, Response.Status.CREATED.getStatusCode());
+    public PublicKey addPublicKey(final PublicKey publicKey) throws GogsClientException {
+        return getClient().post(PublicKey.class, publicKey, "user", "keys");
     }
 
     /**
      * get public key of signed in user.
      * <p>
      * GET /api/v1/user/keys/:id
-     * Response 200, 404, 500
      *
      * @param id public key is.
      * @return public key.
+     * @throws GogsClientException
      */
-    public PublicKey getPublicKey(String id) {
-        Response response = getClient().getWebTarget()
-                .path("user").path("keys").path(id)
-                .request()
-                .header("Authorization", getClient().getAccessToken().getTokenAuthorization())
-                .get();
-
-        if (response.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
-            return null;
-        }
-
-        return handleResponse(response, PublicKey.class, Response.Status.OK.getStatusCode());
+    public PublicKey getPublicKey(final String id) throws GogsClientException {
+        return getClient().get(PublicKey.class, "user", "keys", id);
     }
 
     /**
      * delete public key of signed in user.
      * <p>
      * DELETE /api/v1/user/keys/:id
-     * Response 204, 403, 500
      *
-     * @param id public key id for deletion.
+     * @param publicKeyId public key id for deletion.
+     * @throws GogsClientException
      */
-    public Boolean deletePublicKey(String id) {
-        Response response = getClient().getWebTarget()
-                .path("user").path("keys").path(id)
-                .request()
-                .header("Authorization", getClient().getAccessToken().getTokenAuthorization())
-                .delete();
-
-        handleResponse(response, Response.Status.NO_CONTENT.getStatusCode());
-
-        return true;
+    public void deletePublicKey(final String publicKeyId) throws GogsClientException {
+        getClient().delete("user", "keys", publicKeyId);
     }
 }

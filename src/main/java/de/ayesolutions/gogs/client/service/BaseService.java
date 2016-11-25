@@ -25,7 +25,9 @@ public class BaseService {
 
     public void handleResponse(Response response, int statusCode) {
         if (response.getStatus() != statusCode) {
-            throw new GogsClientException(GogsClientException.createMessage(response));
+            String message = response.readEntity(String.class);
+
+            throw new GogsClientException("gogs error " + response.getStatus() + " " + message);
         }
     }
 
