@@ -118,7 +118,7 @@ public class UserService extends BaseService {
      * @param username name of user.
      * @return user info.
      */
-    public User getInfo(String username) {
+    public User getUser(String username) {
         return getClient().get(User.class, "users", username);
     }
 

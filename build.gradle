@@ -1,10 +1,3 @@
-buildscript {
-    repositories {
-        jcenter()
-        mavenCentral()
-    }
-}
-
 group = "de.ayesolutions.gogs"
 version = "1.0-SNAPSHOT"
 description = "Go Git Service API client for Java"
@@ -30,12 +23,14 @@ jacoco {
 
 findbugs {
     ignoreFailures = true
+    sourceSets = [sourceSets.main]
 }
 
 checkstyle {
     toolVersion = '7.3'
     showViolations = true
     ignoreFailures = true
+    checkstyleTest.enabled = false
 }
 
 jacocoTestReport {
@@ -45,7 +40,6 @@ jacocoTestReport {
 }
 
 repositories {
-    jcenter()
     mavenCentral()
 }
 
@@ -61,7 +55,7 @@ publishing {
                 username System.getenv('MAVEN_USER')
                 password System.getenv('MAVEN_PASS')
             }
-            url "http://helios.asnet.aye-solutions.de:8123/artifactory/libs-snapshot-local"
+            url "https://api.bintray.com/maven/ayesolutions/maven/java-gogs-client/;publish=1"
         }
     }
 }

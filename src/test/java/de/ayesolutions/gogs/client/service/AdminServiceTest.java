@@ -130,7 +130,7 @@ public class AdminServiceTest extends AbstractGogsTest {
         Assert.assertNotNull(organization.getUsername());
         Assert.assertEquals(organization.getUsername() + " - test", organization.getFullName());
         Assert.assertEquals("test organization", organization.getDescription());
-        Assert.assertTrue(organization.getAvatarUrl().startsWith("http://helios.asnet.aye-solutions.de:13001/"));
+        Assert.assertTrue(organization.getAvatarUrl().startsWith("http://gogs.aye-solutions.de/"));
         Assert.assertEquals("somewhere", organization.getLocation());
         Assert.assertEquals("http://localhost", organization.getWebsite());
     }

@@ -73,11 +73,11 @@ public class UserServiceTest extends AbstractGogsTest {
 
     @Test
     public void search() throws Exception {
-        UserService service = new UserService(API_UNAUTHORIZED);
+        UserService service = new UserService(API_USER);
         UserSearchResult result = service.search(USERNAME_USER, 1);
         User user = result.getData().get(0);
         Assert.assertEquals(USERNAME_USER, user.getUsername());
-        Assert.assertEquals("", user.getEmail());
+        Assert.assertEquals("info@aye-solutions.de", user.getEmail());
 
         service = new UserService(API_USER);
         result = service.search("gogs");
@@ -105,7 +105,7 @@ public class UserServiceTest extends AbstractGogsTest {
     @Test
     public void getInfo() throws Exception {
         UserService service = new UserService(API_USER);
-        User user = service.getInfo(USERNAME_USER);
+        User user = service.getUser(USERNAME_USER);
         checkUser(user);
     }
 
