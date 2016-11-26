@@ -1,7 +1,6 @@
 package de.ayesolutions.gogs.client.service;
 
 import de.ayesolutions.gogs.client.AbstractGogsTest;
-import de.ayesolutions.gogs.client.GogsClientException;
 import de.ayesolutions.gogs.client.model.Markdown;
 import org.junit.Assert;
 import org.junit.Test;
@@ -32,23 +31,11 @@ public class MiscellaneousServiceTest extends AbstractGogsTest {
         Assert.assertTrue(content.startsWith("<h1>test</h1>"));
     }
 
-    @Test(expected = GogsClientException.class)
-    public void renderMarkdownInvalid() throws Exception {
-        MiscellaneousService service = new MiscellaneousService(API_INVALID);
-        service.renderMarkdown(dummyMarkdown);
-    }
-
     @Test
     public void renderMarkdownRaw() throws Exception {
         String content = service.renderMarkdownRaw("# test");
 
         Assert.assertNotNull(content);
         Assert.assertTrue(content.startsWith("<h1>test</h1>"));
-    }
-
-    @Test(expected = GogsClientException.class)
-    public void renderMarkdownRawInvalid() throws Exception {
-        MiscellaneousService service = new MiscellaneousService(API_INVALID);
-        service.renderMarkdownRaw("# test");
     }
 }

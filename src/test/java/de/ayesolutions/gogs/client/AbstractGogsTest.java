@@ -16,9 +16,9 @@ public abstract class AbstractGogsTest {
 
     protected final static URI API_URI_INVALID = URI.create("http://helios.asnet.aye-solutions.de:13001/apii/v1");
 
-    protected final static GogsClient API_ADMIN = new GogsClient(API_URI, new AccessToken(null, "5a855f3bcccb41275c9508552e5d8a11321c21df", "gogs-admin", "pass"));
+    protected final static GogsClient API_ADMIN = new GogsClient(API_URI, "gogs-admin", "pass", "5a855f3bcccb41275c9508552e5d8a11321c21df");
 
-    protected final static GogsClient API_USER = new GogsClient(API_URI, new AccessToken(null, "486632a6c6fd07d9e4b0aad8c30c0c834d469a91", "gogs-user", "pass"));
+    protected final static GogsClient API_USER = new GogsClient(API_URI, "gogs-user", "pass", "486632a6c6fd07d9e4b0aad8c30c0c834d469a91");
 
     protected final static GogsClient API_UNAUTHORIZED = new GogsClient(API_URI);
 
@@ -30,11 +30,7 @@ public abstract class AbstractGogsTest {
 
     protected final static String USERNAME_UNKNOWN = "unknown";
 
-    protected final static String PASSWORD = "pass";
-
     protected final static String GRAVATAR_URL = "https://secure.gravatar.com/avatar/";
-
-    protected final static String DEFAULT = "default";
 
     public AbstractGogsTest() {
         createDummyObjects();

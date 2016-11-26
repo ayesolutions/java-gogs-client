@@ -1,14 +1,24 @@
 package de.ayesolutions.gogs.client.service;
 
 import de.ayesolutions.gogs.client.GogsClient;
-import de.ayesolutions.gogs.client.model.*;
+import de.ayesolutions.gogs.client.model.Branch;
+import de.ayesolutions.gogs.client.model.Collaborator;
+import de.ayesolutions.gogs.client.model.CreateRepository;
+import de.ayesolutions.gogs.client.model.EditorDefinition;
+import de.ayesolutions.gogs.client.model.MigrationRepository;
+import de.ayesolutions.gogs.client.model.PublicKey;
+import de.ayesolutions.gogs.client.model.Repository;
+import de.ayesolutions.gogs.client.model.WebHook;
 
-import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.GenericType;
-import javax.ws.rs.core.Response;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
+ * service class for repository management.
+ *
  * @author Christian Aye - c.aye@aye-solutions.de
  */
 public class RepositoryService extends BaseService {
@@ -18,7 +28,7 @@ public class RepositoryService extends BaseService {
      *
      * @param client gogs client.
      */
-    public RepositoryService(GogsClient client) {
+    public RepositoryService(final GogsClient client) {
         super(client);
     }
 
@@ -26,316 +36,198 @@ public class RepositoryService extends BaseService {
      * list all repository for signed in user.
      * <p>
      * GET /api/v1/user/repos
-     * Response 200, 500
      *
      * @return list of repositories.
      */
     public List<Repository> listRepositories() {
-        Response response = getClient().getWebTarget()
-                .path("user").path("repos")
-                .request()
-                .header("Authorization", getClient().getAccessToken().getTokenAuthorization())
-                .get();
+        List<Repository> list = getClient().get(new GenericType<List<Repository>>() {
+        }, "user", "repos");
 
-        return handleResponse(response, new GenericType<List<Repository>>() {
-        }, Response.Status.OK.getStatusCode());
+        return list != null ? list : Collections.emptyList();
     }
 
     /**
      * create user repository.
      * <p>
      * POST /api/v1/user/repos
-     * Response 201, 422, 500
      *
      * @param repository repository.
      * @return created repository.
      */
-    public Repository createRepository(final CreateRepository repository) {
-        Response response = getClient().getWebTarget()
-                .path("user").path("repos")
-                .request()
-                .header("Authorization", getClient().getAccessToken().getTokenAuthorization())
-                .post(Entity.json(repository));
-
-        return handleResponse(response, Repository.class, Response.Status.CREATED.getStatusCode());
+    public Repository createRepository(CreateRepository repository) {
+        return getClient().post(Repository.class, repository, "user", "repos");
     }
 
     /**
      * create organization repository.
      * <p>
      * POST /api/v1/org/:orgname/repos
-     * Response 201, 404, 422, 500
      *
      * @param organizationName organization name.
      * @param repository       repository.
      * @return created repository.
      */
-    public Repository createOrganizationRepository(final String organizationName, final CreateRepository repository) {
-        Response response = getClient().getWebTarget()
-                .path("org").path(organizationName).path("repos")
-                .request()
-                .header("Authorization", getClient().getAccessToken().getTokenAuthorization())
-                .post(Entity.json(repository));
-
-        if (response.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
-            return null;
-        }
-
-        return handleResponse(response, Repository.class, Response.Status.CREATED.getStatusCode());
+    public Repository createOrganizationRepository(String organizationName, CreateRepository repository) {
+        return getClient().post(Repository.class, repository, "org", organizationName, "repos");
     }
 
     /**
      * create new repository to specified user.
      * <p>
      * POST /api/v1/admin/users/:username/repos
-     * Response 201, 404, 422, 500
      *
      * @param username   name of user.
      * @param repository repository.
      * @return created repository.
      */
-    public Repository createRepository(final String username, final Repository repository) {
-        Response response = getClient().getWebTarget()
-                .path("admin").path("users").path(username).path("repos")
-                .request()
-                .header("Authorization", getClient().getAccessToken().getTokenAuthorization())
-                .post(Entity.json(repository));
-
-        if (response.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
-            return null;
-        }
-
-        return handleResponse(response, Repository.class, Response.Status.CREATED.getStatusCode());
+    public Repository createRepository(String username, Repository repository) {
+        return getClient().post(Repository.class, repository, "users", username, "repos");
     }
 
     /**
      * search for repositories.
      * <p>
      * GET /api/v1/repos/search
-     * Response 200, 500
      *
      * @param query  query string.
      * @param userId user id. (default for all 0)
      * @param limit  limit value result. (default 10)
      * @return search result of found repositories.
      */
-    public List<Repository> search(final String query, final long userId, final int limit) {
-        Response response = getClient().getWebTarget()
-                .path("user").path("repos")
-                .queryParam("q", query)
-                .queryParam("uid", userId)
-                .queryParam("limit", limit)
-                .request()
-                .header("Authorization", getClient().getAccessToken().getTokenAuthorization())
-                .get();
+    public List<Repository> search(String query, long userId, int limit) {
+        Map<String, String> parameters = new HashMap<>();
+        parameters.put("q", query);
+        parameters.put("uid", String.valueOf(userId));
+        parameters.put("limit", String.valueOf(limit));
 
-        return handleResponse(response, new GenericType<List<Repository>>() {
-        }, Response.Status.OK.getStatusCode());
+        List<Repository> list = getClient().get(new GenericType<List<Repository>>() {
+        }, parameters, "user", "repos");
+
+        return list != null ? list : Collections.emptyList();
     }
 
     /**
      * migrate existing repository to gogs account.
      * <p>
      * POST /api/v1/repos/migrate
-     * Response 201, 403, 422, 500
      *
      * @param repository repository.
      * @return migrated repository.
      */
-    public Repository migrate(final MigrationRepository repository) {
-        Response response = getClient().getWebTarget()
-                .path("repos").path("migrate")
-                .request()
-                .header("Authorization", getClient().getAccessToken().getTokenAuthorization())
-                .post(Entity.json(repository));
-
-        return handleResponse(response, Repository.class, Response.Status.OK.getStatusCode());
+    public Repository migrate(MigrationRepository repository) {
+        return getClient().post(Repository.class, repository, "repos", "migrate");
     }
 
     /**
      * get repository.
      * <p>
      * GET /api/v1/repos/:username/:reponame
-     * Response 200, 404, 422, 500
      *
      * @param username       user name.
      * @param repositoryName repository name.
      * @return repository.
      */
-    public Repository getRepository(final String username, final String repositoryName) {
-        Response response = getClient().getWebTarget()
-                .path("repos").path(username).path(repositoryName)
-                .request()
-                .header("Authorization", getClient().getAccessToken().getTokenAuthorization())
-                .get();
-
-        if (response.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
-            return null;
-        }
-
-        return handleResponse(response, Repository.class, Response.Status.OK.getStatusCode());
+    public Repository getRepository(String username, String repositoryName) {
+        return getClient().get(Repository.class, "repos", username, repositoryName);
     }
 
     /**
      * delete repository from user.
      * <p>
      * DELETE /api/v1/repos/:username/:reponame
-     * Response 204, 404, 422, 500
      *
      * @param username       username.
      * @param repositoryName repository name.
-     * @return true if success otherwise false.
      */
-    public boolean deleteRepository(final String username, final String repositoryName) {
-        Response response = getClient().getWebTarget()
-                .path("repos").path(username).path(repositoryName)
-                .request()
-                .header("Authorization", getClient().getAccessToken().getTokenAuthorization())
-                .delete();
-
-        if (response.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
-            return false;
-        }
-
-        handleResponse(response, Response.Status.NO_CONTENT.getStatusCode());
-
-        return true;
+    public void deleteRepository(String username, String repositoryName) {
+        getClient().delete(Repository.class, "repos", username, repositoryName);
     }
 
     /**
      * get list of web hooks from repository.
      * <p>
      * GET /api/v1/repos/:username/:reponame/hooks
-     * Response 200, 500
      *
      * @param username       username.
      * @param repositoryName repository name.
      * @return list of web hooks.
      */
-    public List<WebHook> listWebHooks(final String username, final String repositoryName) {
-        Response response = getClient().getWebTarget()
-                .path("repos").path(username).path(repositoryName).path("hooks")
-                .request()
-                .header("Authorization", getClient().getAccessToken().getTokenAuthorization())
-                .get();
+    public List<WebHook> listWebHooks(String username, String repositoryName) {
+        List<WebHook> list = getClient().get(new GenericType<List<WebHook>>() {
+        }, "repos", username, repositoryName, "hooks");
 
-        return handleResponse(response, new GenericType<List<WebHook>>() {
-        }, Response.Status.OK.getStatusCode());
+        return list != null ? list : Collections.emptyList();
     }
 
     /**
      * create new web hook for repository.
      * <p>
      * POST /api/v1/repos/:username/:reponame/hooks
-     * Response 201, 422, 500
      *
      * @param username       username.
      * @param repositoryName repository name.
      * @param webHook        web hook.
      * @return created web hook.
      */
-    public WebHook createWebHook(final String username, final String repositoryName, final WebHook webHook) {
-        Response response = getClient().getWebTarget()
-                .path("repos").path(username).path(repositoryName).path("hooks")
-                .request()
-                .header("Authorization", getClient().getAccessToken().getTokenAuthorization())
-                .post(Entity.json(webHook));
-
-        if (response.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
-            return null;
-        }
-
-        return handleResponse(response, WebHook.class, Response.Status.CREATED.getStatusCode());
+    public WebHook createWebHook(String username, String repositoryName, WebHook webHook) {
+        return getClient().post(WebHook.class, webHook, "repos", username, repositoryName, "hooks");
     }
 
     /**
      * update web hook information.
      * <p>
      * PATCH /api/v1/repos/:username/:reponame/hooks/:id
-     * Response 200, 404, 422, 500
      *
      * @param username       username.
      * @param repositoryName repository name
      * @param webHook        web hook.
      * @return updated web hook.
      */
-    public WebHook updateWebHook(final String username, final String repositoryName, final WebHook webHook) {
-        Response response = getClient().getWebTarget()
-                .path("repos").path(username).path(repositoryName).path("hooks").path(webHook.getId().toString())
-                .request()
-                .header("Authorization", getClient().getAccessToken().getTokenAuthorization())
-                .method("PATCH", Entity.json(webHook));
-
-        if (response.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
-            return null;
-        }
-
-        return handleResponse(response, WebHook.class, Response.Status.OK.getStatusCode());
+    public WebHook updateWebHook(String username, String repositoryName, WebHook webHook) {
+        return getClient().patch(WebHook.class, webHook, "repos", username, repositoryName, "hooks",
+                webHook.getId().toString());
     }
 
     /**
      * delete web hook from repository.
      * <p>
      * DELETE /api/v1/repos/:username/:reponame/hooks/:id
-     * Response 204, 500
      *
      * @param username       username.
      * @param repositoryName repository name.
      * @param webHookId      web hook id.
-     * @return true if success otherwise false.
      */
-    public boolean deleteWebHook(final String username, final String repositoryName, final long webHookId) {
-        Response response = getClient().getWebTarget()
-                .path("repos").path(username).path(repositoryName).path("hooks").path(String.valueOf(webHookId))
-                .request()
-                .header("Authorization", getClient().getAccessToken().getTokenAuthorization())
-                .delete();
-
-        if (response.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
-            return false;
-        }
-
-        handleResponse(response, Response.Status.NO_CONTENT.getStatusCode());
-
-        return true;
+    public void deleteWebHook(String username, String repositoryName, long webHookId) {
+        getClient().delete(WebHook.class, "repos", username, repositoryName, "hooks", String.valueOf(webHookId));
     }
 
     /**
      * add new collaborator to repository.
      * <p>
      * PUT /api/v1/repos/:username/:reponame/collaborator/:id
-     * Response 204, 422, 500
      *
      * @param username       username.
      * @param repositoryName repository name.
+     * @param collaboratorId collaboration id.
      * @param collaborator   collaborator.
-     * @return added collaborator.
      */
-    public boolean addCollaborator(final String username, final String repositoryName, final String collaboratorId,
-                                   final Collaborator collaborator) {
-        Response response = getClient().getWebTarget()
-                .path("repos").path(username).path(repositoryName).path("collaborator").path(collaboratorId)
-                .request()
-                .header("Authorization", getClient().getAccessToken().getTokenAuthorization())
-                .put(Entity.json(collaborator));
-
-        handleResponse(response, Response.Status.NO_CONTENT.getStatusCode());
-
-        return true;
+    public void addCollaborator(String username, String repositoryName, String collaboratorId,
+                                Collaborator collaborator) {
+        getClient().put(Void.class, collaborator, "repos", username, repositoryName, "collaborator",
+                collaboratorId);
     }
 
     /**
      * get raw content of file in repository.
      * <p>
      * GET /api/v1/repos/:username/:reponame/raw/:path
-     * Response
      *
      * @param username       username.
      * @param repositoryName repository name.
      * @param path           path to file.
      * @return data byte array.
      */
-    public byte[] getRawFile(final String username, final String repositoryName, final String path) {
+    public byte[] getRawFile(String username, String repositoryName, String path) {
         throw new UnsupportedOperationException("receive binary data currently not supported");
     }
 
@@ -343,14 +235,13 @@ public class RepositoryService extends BaseService {
      * get repository archive.
      * <p>
      * GET /api/v1/repos/:username/:reponame/archive/:path
-     * Response
      *
      * @param username       username.
      * @param repositoryName repository name.
      * @param path           path to archive.
      * @return data byte array.
      */
-    public byte[] getArchive(final String username, final String repositoryName, final String path) {
+    public byte[] getArchive(String username, String repositoryName, String path) {
         throw new UnsupportedOperationException("receive binary data currently not supported");
     }
 
@@ -358,239 +249,100 @@ public class RepositoryService extends BaseService {
      * list branches of repository.
      * <p>
      * GET /api/v1/repos/:username/:reponame/branches
-     * Response 200, 500
      *
      * @param username       username.
      * @param repositoryName repository name.
      * @return list of branches.
      */
-    public List<Branch> listBranches(final String username, final String repositoryName) {
-        Response response = getClient().getWebTarget()
-                .path("repos").path(username).path(repositoryName).path("branches")
-                .request()
-                .header("Authorization", getClient().getAccessToken().getTokenAuthorization())
-                .get();
+    public List<Branch> listBranches(String username, String repositoryName) {
+        List<Branch> list = getClient().get(new GenericType<List<Branch>>() {
+        }, "repos", username, repositoryName, "branches");
 
-        return handleResponse(response, new GenericType<List<Branch>>() {
-        }, Response.Status.OK.getStatusCode());
+        return list != null ? list : Collections.emptyList();
     }
 
     /**
      * get specified branch.
      * <p>
      * GET /api/v1/repos/:username/:reponame/branches/:id
-     * Response 200, 500
      *
      * @param username       username.
      * @param repositoryName repository name.
      * @param branchId       branch id.
      * @return repository branch.
      */
-    public Branch getBranch(final String username, final String repositoryName, final String branchId) {
-        Response response = getClient().getWebTarget()
-                .path("repos").path(username).path(repositoryName).path("branches").path(branchId)
-                .request()
-                .header("Authorization", getClient().getAccessToken().getTokenAuthorization())
-                .get();
-
-        if (response.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
-            return null;
-        }
-
-        return handleResponse(response, Branch.class, Response.Status.OK.getStatusCode());
-    }
-
-    /**
-     * add new public key to specified user.
-     * <p>
-     * POST /api/v1/admin/users/:username/keys
-     * Response 201, 404, 422, 500
-     *
-     * @param username  name of user.
-     * @param publicKey public key.
-     * @return added public key.
-     */
-    public PublicKey addPublicKey(final String username, final PublicKey publicKey) {
-        Response response = getClient().getWebTarget()
-                .path("admin").path("users").path(username).path("keys")
-                .request()
-                .header("Authorization", getClient().getAccessToken().getTokenAuthorization())
-                .post(Entity.json(publicKey));
-
-        if (response.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
-            return null;
-        }
-
-        return handleResponse(response, PublicKey.class, Response.Status.CREATED.getStatusCode());
+    public Branch getBranch(String username, String repositoryName, String branchId) {
+        return getClient().get(Branch.class, "repos", username, repositoryName, "branches", branchId);
     }
 
     /**
      * get list of deployment keys from repository.
      * <p>
      * GET /api/v1/repos/:username/:reponame/keys
-     * Response 200, 500
      *
      * @param username       username.
      * @param repositoryName repository name.
      * @return list of deployment keys.
      */
-    public List<PublicKey> getDeployKeys(final String username, final String repositoryName) {
-        Response response = getClient().getWebTarget()
-                .path("repos").path(username).path(repositoryName).path("keys")
-                .request()
-                .header("Authorization", getClient().getAccessToken().getTokenAuthorization())
-                .get();
+    public List<PublicKey> getDeployKeys(String username, String repositoryName) {
+        List<PublicKey> list = getClient().get(new GenericType<List<PublicKey>>() {
+        }, "repos", username, repositoryName, "keys");
 
-        return handleResponse(response, new GenericType<List<PublicKey>>() {
-        }, Response.Status.OK.getStatusCode());
+        return list != null ? list : Collections.emptyList();
     }
 
     /**
      * add new deployment key to repository.
      * <p>
      * POST /api/v1/repos/:username/:reponame/keys
-     * Response 201, 422, 500
      *
      * @param username       username.
      * @param repositoryName repository name.
      * @param publicKey      public key.
      * @return added public key.
      */
-    public PublicKey addDeployKey(final String username, final String repositoryName, final PublicKey publicKey) {
-        Response response = getClient().getWebTarget()
-                .path("repos").path(username).path(repositoryName).path("keys")
-                .request()
-                .header("Authorization", getClient().getAccessToken().getTokenAuthorization())
-                .post(Entity.json(publicKey));
-
-        return handleResponse(response, PublicKey.class, Response.Status.CREATED.getStatusCode());
+    public PublicKey addDeployKey(String username, String repositoryName, PublicKey publicKey) {
+        return getClient().post(PublicKey.class, publicKey, "repos", username, repositoryName, "keys");
     }
 
     /**
      * get specified deployment key.
      * <p>
      * GET /api/v1/repos/:username/:reponame/keys/:id
-     * Response 200, 404, 500
      *
      * @param username       username.
      * @param repositoryName repository name.
      * @param deployKeyId    deployment key id.
      * @return deployment key.
      */
-    public PublicKey getDeployKey(final String username, final String repositoryName, final String deployKeyId) {
-        Response response = getClient().getWebTarget()
-                .path("repos").path(username).path(repositoryName).path("keys").path(deployKeyId)
-                .request()
-                .header("Authorization", getClient().getAccessToken().getTokenAuthorization())
-                .get();
-
-        if (response.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
-            return null;
-        }
-
-        return handleResponse(response, PublicKey.class, Response.Status.OK.getStatusCode());
+    public PublicKey getDeployKey(String username, String repositoryName, String deployKeyId) {
+        return getClient().get(PublicKey.class, "repos", username, repositoryName, "keys", deployKeyId);
     }
 
     /**
      * delete deployment key.
      * <p>
      * DELETE /api/v1/repos/:username/:reponame/keys/:id
-     * Response 204, 403, 500
      *
      * @param username       username.
      * @param repositoryName repository name.
      * @param deployKeyId    deployment key id.
-     * @return true if success otherwise false.
      */
-    public boolean deleteDeployKey(final String username, final String repositoryName, final String deployKeyId) {
-        Response response = getClient().getWebTarget()
-                .path("repos").path(username).path(repositoryName).path("keys").path(deployKeyId)
-                .request()
-                .header("Authorization", getClient().getAccessToken().getTokenAuthorization())
-                .delete();
-
-        if (response.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
-            return false;
-        }
-
-        handleResponse(response, Response.Status.NO_CONTENT.getStatusCode());
-
-        return true;
+    public void deleteDeployKey(String username, String repositoryName, String deployKeyId) {
+        getClient().delete(PublicKey.class, "repos", username, repositoryName, "keys", deployKeyId);
     }
 
     /**
      * get editor configuration from repository.
      * <p>
      * GET /api/v1/repos/:username/:reponame/editorconfig/:path
-     * Response 200, 404, 500
      *
      * @param username       username.
      * @param repositoryName repository.
      * @param path           path to editor configuration.
      * @return data byte array.
      */
-    public EditorDefinition getEditorConfig(final String username, final String repositoryName, final String path) {
-        Response response = getClient().getWebTarget()
-                .path("repos").path(username).path(repositoryName).path("editorconfig").path(path)
-                .request()
-                .header("Authorization", getClient().getAccessToken().getTokenAuthorization())
-                .get();
-
-        if (response.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
-            return null;
-        }
-
-        return handleResponse(response, EditorDefinition.class, Response.Status.OK.getStatusCode());
-    }
-
-    /**
-     * add team to another repository.
-     * <p>
-     * PUT /api/v1/admin/teams/:teamId/repos/:reponame
-     * Response 204, 404, 500
-     *
-     * @param teamId         team id.
-     * @param repositoryName repository name.
-     */
-    public boolean addTeamRepository(final String teamId, final String repositoryName) {
-        Response response = getClient().getWebTarget()
-                .path("admin").path("teams").path(teamId).path("repos").path(repositoryName)
-                .request()
-                .header("Authorization", getClient().getAccessToken().getTokenAuthorization())
-                .put(Entity.text(""));
-
-        if (response.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
-            return false;
-        }
-
-        handleResponse(response, Response.Status.NO_CONTENT.getStatusCode());
-
-        return true;
-    }
-
-    /**
-     * delete team from repository.
-     * <p>
-     * DELETE /api/v1/admin/teams/:teamId/repos/:reponame
-     * Response 204, 404, 500
-     *
-     * @param teamId         team id.
-     * @param repositoryName repository name.
-     * @return true if successful otherwise false.
-     */
-    public boolean deleteTeamRepository(final String teamId, final String repositoryName) {
-        Response response = getClient().getWebTarget()
-                .path("admin").path("teams").path(teamId).path("repos").path(repositoryName)
-                .request()
-                .header("Authorization", getClient().getAccessToken().getTokenAuthorization())
-                .delete();
-
-        if (response.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
-            return false;
-        }
-
-        handleResponse(response, Response.Status.NO_CONTENT.getStatusCode());
-
-        return true;
+    public EditorDefinition getEditorConfig(String username, String repositoryName, String path) {
+        return getClient().get(EditorDefinition.class, "repos", username, repositoryName, "editorconfig", path);
     }
 }

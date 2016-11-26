@@ -4,7 +4,7 @@ import de.ayesolutions.gogs.client.GogsClient;
 import de.ayesolutions.gogs.client.model.Status;
 
 import javax.ws.rs.core.GenericType;
-import javax.ws.rs.core.Response;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -17,9 +17,9 @@ public class BuildService extends BaseService {
     /**
      * default constructor.
      *
-     * @param client
+     * @param client gogs http client.
      */
-    public BuildService(GogsClient client) {
+    public BuildService(final GogsClient client) {
         super(client);
     }
 
@@ -34,18 +34,10 @@ public class BuildService extends BaseService {
      * @return list of states.
      */
     public List<Status> listStatuses(String username, String repositoryName) {
-        Response response = getClient().getWebTarget()
-                .path("repos").path(username).path(repositoryName).path("statuses")
-                .request()
-                .header("Authorization", getClient().getAccessToken().getTokenAuthorization())
-                .get();
+        List<Status> list = getClient().get(new GenericType<List<Status>>() {
+        }, "repos", username, repositoryName, "statuses");
 
-        if (response.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
-            return null;
-        }
-
-        return handleResponse(response, new GenericType<List<Status>>() {
-        }, Response.Status.OK.getStatusCode());
+        return list != null ? list : Collections.emptyList();
     }
 
     /**
@@ -56,20 +48,11 @@ public class BuildService extends BaseService {
      *
      * @param username       username.
      * @param repositoryName repository name.
+     * @param sha            commit sha
      * @param status         status.
      * @return created status.
      */
     public Status createStatus(String username, String repositoryName, String sha, Status status) {
-        Response response = getClient().getWebTarget()
-                .path("repos").path(username).path(repositoryName).path("statuses")
-                .request()
-                .header("Authorization", getClient().getAccessToken().getTokenAuthorization())
-                .get();
-
-        if (response.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
-            return null;
-        }
-
-        return handleResponse(response, Status.class, Response.Status.CREATED.getStatusCode());
+        return getClient().post(Status.class, status, "repos", username, repositoryName, "statuses", sha);
     }
 }

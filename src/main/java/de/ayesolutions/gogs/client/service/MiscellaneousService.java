@@ -1,15 +1,14 @@
 package de.ayesolutions.gogs.client.service;
 
 import de.ayesolutions.gogs.client.GogsClient;
-import de.ayesolutions.gogs.client.GogsClientException;
 import de.ayesolutions.gogs.client.model.Markdown;
 
 /**
- * miscellaneous server functions.
+ * service class for miscellaneous things.
  *
  * @author Christian Aye - c.aye@aye-solutions.de
  */
-public final class MiscellaneousService extends BaseService {
+public class MiscellaneousService extends BaseService {
 
     /**
      * default constructor.
@@ -21,28 +20,26 @@ public final class MiscellaneousService extends BaseService {
     }
 
     /**
-     * render markdown.
-     *
+     * render markdown content to html.
+     * <p>
      * GET /api/v1/markdown
      *
      * @param markdown markdown definition.
      * @return html rendered markdown.
-     * @throws GogsClientException
      */
-    public String renderMarkdown(final Markdown markdown) throws GogsClientException {
+    public String renderMarkdown(Markdown markdown) {
         return getClient().post(String.class, markdown, "markdown");
     }
 
     /**
-     * render markdown.
-     *
+     * render markdown content to html.
+     * <p>
      * GET /api/v1/markdown/raw
      *
      * @param data text markdown.
      * @return html rendered markdown.
-     * @throws GogsClientException
      */
-    public String renderMarkdownRaw(final String data) throws GogsClientException {
+    public String renderMarkdownRaw(String data) {
         return getClient().post(String.class, data, "markdown", "raw");
     }
 }

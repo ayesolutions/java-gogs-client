@@ -2,21 +2,27 @@ package de.ayesolutions.gogs.client.service;
 
 import de.ayesolutions.gogs.client.GogsClient;
 import de.ayesolutions.gogs.client.GogsClientException;
-import de.ayesolutions.gogs.client.model.*;
+import de.ayesolutions.gogs.client.model.AccessToken;
+import de.ayesolutions.gogs.client.model.Email;
+import de.ayesolutions.gogs.client.model.EmailList;
+import de.ayesolutions.gogs.client.model.PublicKey;
+import de.ayesolutions.gogs.client.model.User;
+import de.ayesolutions.gogs.client.model.UserSearchResult;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
- * Gogs user service call class.
+ * service class for user management.
  *
  * @author Christian Aye - c.aye@aye-solutions.de
  */
-public final class UserService extends BaseService {
+public class UserService extends BaseService {
 
     /**
      * default constructor.
@@ -34,19 +40,18 @@ public final class UserService extends BaseService {
      *
      * @param username username.
      * @return list of user access tokens.
-     * @throws GogsClientException
      */
-    public List<AccessToken> listAccessTokens(final String username) throws GogsClientException {
-        Response response = getClient().getWebTarget()
+    public List<AccessToken> listAccessTokens(String username) {
+        Response response = getClient().getClient().target(getClient().getApiUri())
                 .path("users").path(username).path("tokens")
                 .request().header("Authorization", getClient().getAccessToken().getBasicAuthorization())
                 .get();
 
-        if (response == null) {
-            throw new GogsClientException("no response");
+        if (response.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
+            return Collections.emptyList();
         }
 
-        if (!(response.getStatus() == 200)) {
+        if (!(response.getStatus() == Response.Status.OK.getStatusCode())) {
             throw new GogsClientException("unknown error");
         }
 
@@ -59,21 +64,17 @@ public final class UserService extends BaseService {
      * <p>
      * POST /api/v1/users/:username/tokens
      *
-     * @param name name of access token.
+     * @param username username.
+     * @param name     name of access token.
      * @return new generated access token.
-     * @throws GogsClientException
      */
-    public AccessToken createToken(final String username, final String name) throws GogsClientException {
-        Response response = getClient().getWebTarget()
+    public AccessToken createToken(String username, String name) {
+        Response response = getClient().getClient().target(getClient().getApiUri())
                 .path("users").path(username).path("tokens")
                 .request().header("Authorization", getClient().getAccessToken().getBasicAuthorization())
                 .post(Entity.json(new AccessToken(name, null)));
 
-        if (response == null) {
-            throw new GogsClientException("no response");
-        }
-
-        if (!(response.getStatus() == 201)) {
+        if (!(response.getStatus() == Response.Status.CREATED.getStatusCode())) {
             throw new GogsClientException("unknown error");
         }
 
@@ -87,9 +88,8 @@ public final class UserService extends BaseService {
      *
      * @param query search string.
      * @return list of users.
-     * @throws GogsClientException
      */
-    public UserSearchResult search(final String query) throws GogsClientException {
+    public UserSearchResult search(String query) {
         return search(query, 0);
     }
 
@@ -101,9 +101,8 @@ public final class UserService extends BaseService {
      * @param query search string.
      * @param limit limit number of search result.
      * @return list of users.
-     * @throws GogsClientException
      */
-    public UserSearchResult search(final String query, final int limit) throws GogsClientException {
+    public UserSearchResult search(String query, int limit) {
         Map<String, String> parameters = new HashMap<>();
         parameters.put("q", query);
         parameters.put("limit", String.valueOf(limit));
@@ -118,9 +117,8 @@ public final class UserService extends BaseService {
      *
      * @param username name of user.
      * @return user info.
-     * @throws GogsClientException
      */
-    public User getInfo(final String username) throws GogsClientException {
+    public User getInfo(String username) {
         return getClient().get(User.class, "users", username);
     }
 
@@ -131,11 +129,12 @@ public final class UserService extends BaseService {
      *
      * @param username name of user.
      * @return list of public keys.
-     * @throws GogsClientException
      */
-    public List<PublicKey> listPublicKeys(final String username) throws GogsClientException {
-        return getClient().get(new GenericType<List<PublicKey>>() {
+    public List<PublicKey> listPublicKeys(String username) {
+        List<PublicKey> list = getClient().get(new GenericType<List<PublicKey>>() {
         }, "users", username, "keys");
+
+        return list != null ? list : Collections.emptyList();
     }
 
     /**
@@ -145,11 +144,12 @@ public final class UserService extends BaseService {
      *
      * @param username name of user.
      * @return list of followers.
-     * @throws GogsClientException
      */
-    public List<User> listFollowers(final String username) throws GogsClientException {
-        return getClient().get(new GenericType<List<User>>() {
+    public List<User> listFollowers(String username) {
+        List<User> list = getClient().get(new GenericType<List<User>>() {
         }, "users", username, "followers");
+
+        return list != null ? list : Collections.emptyList();
     }
 
     /**
@@ -158,11 +158,12 @@ public final class UserService extends BaseService {
      * GET /api/v1/user/followers
      *
      * @return list of followers.
-     * @throws GogsClientException
      */
-    public List<User> listFollowers() throws GogsClientException {
-        return getClient().get(new GenericType<List<User>>() {
+    public List<User> listFollowers() {
+        List<User> list = getClient().get(new GenericType<List<User>>() {
         }, "user", "followers");
+
+        return list != null ? list : Collections.emptyList();
     }
 
     /**
@@ -172,11 +173,12 @@ public final class UserService extends BaseService {
      *
      * @param username name of user.
      * @return list of users.
-     * @throws GogsClientException
      */
-    public List<User> listFollowing(final String username) throws GogsClientException {
-        return getClient().get(new GenericType<List<User>>() {
-        }, "user", username, "following");
+    public List<User> listFollowing(String username) {
+        List<User> list = getClient().get(new GenericType<List<User>>() {
+        }, "users", username, "following");
+
+        return list != null ? list : Collections.emptyList();
     }
 
     /**
@@ -185,11 +187,12 @@ public final class UserService extends BaseService {
      * GET /api/v1/user/following
      *
      * @return list of users.
-     * @throws GogsClientException
      */
-    public List<User> listFollowing() throws GogsClientException {
-        return getClient().get(new GenericType<List<User>>() {
+    public List<User> listFollowing() {
+        List<User> list = getClient().get(new GenericType<List<User>>() {
         }, "user", "following");
+
+        return list != null ? list : Collections.emptyList();
     }
 
     /**
@@ -199,10 +202,10 @@ public final class UserService extends BaseService {
      *
      * @param username       name of user to check.
      * @param targetUsername following user to check.
-     * @throws GogsClientException
+     * @return true if successful.
      */
-    public void checkFollowing(final String username, final String targetUsername) throws GogsClientException {
-        getClient().get(Void.class, "users", username, "following", targetUsername);
+    public boolean checkFollowing(String username, String targetUsername) {
+        return getClient().get(String.class, "users", username, "following", targetUsername) != null;
     }
 
     /**
@@ -211,10 +214,10 @@ public final class UserService extends BaseService {
      * GET /api/v1/user/following/:target
      *
      * @param targetUsername following user to check.
-     * @throws GogsClientException
+     * @return true if successful.
      */
-    public void checkFollowing(final String targetUsername) throws GogsClientException {
-        getClient().get(Void.class, "user", "following", targetUsername);
+    public boolean checkFollowing(String targetUsername) {
+        return getClient().get(String.class, "user", "following", targetUsername) != null;
     }
 
     /**
@@ -223,9 +226,8 @@ public final class UserService extends BaseService {
      * GET /api/v1/user
      *
      * @return user info.
-     * @throws GogsClientException
      */
-    public User getUser() throws GogsClientException {
+    public User getUser() {
         return getClient().get(User.class, "user");
     }
 
@@ -235,25 +237,27 @@ public final class UserService extends BaseService {
      * GET /api/v1/user/emails
      *
      * @return list of emails.
-     * @throws GogsClientException
      */
-    public List<Email> listUserEmails() throws GogsClientException {
-        return getClient().get(new GenericType<List<Email>>() {
+    public List<Email> listUserEmails() {
+        List<Email> list = getClient().get(new GenericType<List<Email>>() {
         }, "user", "emails");
+
+        return list != null ? list : Collections.emptyList();
     }
 
     /**
      * add new email address and return all registered emails.
      * <p>
-     * PUT /api/v1/user/emails
+     * POST /api/v1/user/emails
      *
      * @param emailList list of emails to add.
      * @return list of emails.
-     * @throws GogsClientException
      */
-    public List<Email> addEmail(final EmailList emailList) throws GogsClientException {
-        return getClient().post(new GenericType<List<Email>>() {
+    public List<Email> addEmail(EmailList emailList) {
+        List<Email> list = getClient().post(new GenericType<List<Email>>() {
         }, emailList, "user", "emails");
+
+        return list != null ? list : Collections.emptyList();
     }
 
     /**
@@ -262,9 +266,8 @@ public final class UserService extends BaseService {
      * DELETE /api/v1/user/emails
      *
      * @param emailList email list to delete.
-     * @throws GogsClientException
      */
-    public void deleteEmail(final EmailList emailList) throws GogsClientException {
+    public void deleteEmail(EmailList emailList) {
         getClient().delete(emailList, "user", "emails");
     }
 
@@ -274,9 +277,8 @@ public final class UserService extends BaseService {
      * PUT /api/v1/user/following/:target
      *
      * @param username name of user to follow.
-     * @throws GogsClientException
      */
-    public void follow(final String username) throws GogsClientException {
+    public void follow(String username) {
         getClient().put(Void.class, null, "user", "following", username);
     }
 
@@ -286,9 +288,8 @@ public final class UserService extends BaseService {
      * DELETE /api/v1/user/following/:target
      *
      * @param username name of user to unfollow.
-     * @throws GogsClientException
      */
-    public void unfollow(final String username) throws GogsClientException {
+    public void unfollow(String username) {
         getClient().delete("user", "following", username);
     }
 
@@ -298,11 +299,12 @@ public final class UserService extends BaseService {
      * GET /api/v1/user/keys
      *
      * @return list of public keys.
-     * @throws GogsClientException
      */
-    public List<PublicKey> listPublicKeys() throws GogsClientException {
-        return getClient().get(new GenericType<List<PublicKey>>() {
+    public List<PublicKey> listPublicKeys() {
+        List<PublicKey> list = getClient().get(new GenericType<List<PublicKey>>() {
         }, "user", "keys");
+
+        return list != null ? list : Collections.emptyList();
     }
 
     /**
@@ -312,9 +314,8 @@ public final class UserService extends BaseService {
      *
      * @param publicKey public key.
      * @return added public key.
-     * @throws GogsClientException
      */
-    public PublicKey addPublicKey(final PublicKey publicKey) throws GogsClientException {
+    public PublicKey addPublicKey(PublicKey publicKey) {
         return getClient().post(PublicKey.class, publicKey, "user", "keys");
     }
 
@@ -325,9 +326,8 @@ public final class UserService extends BaseService {
      *
      * @param id public key is.
      * @return public key.
-     * @throws GogsClientException
      */
-    public PublicKey getPublicKey(final String id) throws GogsClientException {
+    public PublicKey getPublicKey(String id) {
         return getClient().get(PublicKey.class, "user", "keys", id);
     }
 
@@ -337,9 +337,8 @@ public final class UserService extends BaseService {
      * DELETE /api/v1/user/keys/:id
      *
      * @param publicKeyId public key id for deletion.
-     * @throws GogsClientException
      */
-    public void deletePublicKey(final String publicKeyId) throws GogsClientException {
+    public void deletePublicKey(String publicKeyId) {
         getClient().delete("user", "keys", publicKeyId);
     }
 }

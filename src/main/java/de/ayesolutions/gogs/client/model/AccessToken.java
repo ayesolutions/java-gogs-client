@@ -17,13 +17,30 @@ public final class AccessToken {
 
     private transient String password;
 
+    /**
+     * default constructor.
+     */
     public AccessToken() {
     }
 
+    /**
+     * default constructor.
+     *
+     * @param name token name.
+     * @param sha1 sha1 token.
+     */
     public AccessToken(final String name, final String sha1) {
         this(name, sha1, null, null);
     }
 
+    /**
+     * default constructor.
+     *
+     * @param name tokenname.
+     * @param sha1 sha1 token.
+     * @param username http username.
+     * @param password http password.
+     */
     public AccessToken(final String name, final String sha1, final String username, final String password) {
         setName(name);
         setSha1(sha1);

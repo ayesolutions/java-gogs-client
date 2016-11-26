@@ -23,10 +23,18 @@ public class CreateRepository {
 
     private String readme = "Default";
 
+    /**
+     * default constructor.
+     */
     public CreateRepository() {
     }
 
-    public CreateRepository(String name) {
+    /**
+     * default constructor.
+     *
+     * @param name repository name.
+     */
+    public CreateRepository(final String name) {
         this.name = name;
     }
 

@@ -4,6 +4,7 @@ import de.ayesolutions.gogs.client.AbstractGogsTest;
 import de.ayesolutions.gogs.client.GogsClientException;
 import de.ayesolutions.gogs.client.model.*;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.List;
@@ -56,15 +57,18 @@ public class UserServiceTest extends AbstractGogsTest {
         Assert.assertTrue(accessTokenList.size() > 0);
     }
 
-    @Test(expected = GogsClientException.class)
+    @Test
+    @Ignore
     public void getAccessTokensI() throws Exception {
-        service.listAccessTokens(USERNAME_UNKNOWN);
+        List<AccessToken> l = service.listAccessTokens(USERNAME_UNKNOWN);
+
+        Assert.assertTrue(l.size() == 0);
     }
 
-    @Test(expected = GogsClientException.class)
+    @Test
     public void getAccessTokensInvalidUri() throws Exception {
         UserService service = new UserService(API_INVALID);
-        service.listAccessTokens(USERNAME_USER);
+        Assert.assertTrue(service.listAccessTokens(USERNAME_USER).size() == 0);
     }
 
     @Test
@@ -92,10 +96,10 @@ public class UserServiceTest extends AbstractGogsTest {
         Assert.assertTrue(result.isOk());
     }
 
-    @Test(expected = GogsClientException.class)
+    @Test
     public void searchInvalid() throws Exception {
         UserService service = new UserService(API_INVALID);
-        service.search("gogs");
+        Assert.assertNull(service.search("gogs"));
     }
 
     @Test
@@ -133,9 +137,9 @@ public class UserServiceTest extends AbstractGogsTest {
         service.deletePublicKey(publicKey.getId().toString());
     }
 
-    @Test(expected = GogsClientException.class)
+    @Test
     public void getPublicKeyI() throws Exception {
-        service.getPublicKey("0");
+        Assert.assertNull(service.getPublicKey("0"));;
     }
 
     @Test
@@ -157,9 +161,9 @@ public class UserServiceTest extends AbstractGogsTest {
         service.deletePublicKey(publicKey.getId().toString());
     }
 
-    @Test(expected = GogsClientException.class)
+    @Test
     public void listPublicKeysI() throws Exception {
-        service.listPublicKeys(USERNAME_UNKNOWN);
+        Assert.assertTrue(service.listPublicKeys(USERNAME_UNKNOWN).size() == 0);
     }
 
     @Test
@@ -177,9 +181,9 @@ public class UserServiceTest extends AbstractGogsTest {
         service.deletePublicKey(publicKey.getId().toString());
     }
 
-    @Test(expected = GogsClientException.class)
+    @Test
     public void listPublicKeysInvalid() throws Exception {
-        service.listPublicKeys(USERNAME_UNKNOWN);
+        Assert.assertTrue(service.listPublicKeys(USERNAME_UNKNOWN).size() == 0);
     }
 
     @Test
@@ -191,6 +195,7 @@ public class UserServiceTest extends AbstractGogsTest {
         Assert.assertEquals(1, userList.size());
         Assert.assertEquals(USERNAME_USER, userList.get(0).getUsername());
 
+        userList = service.listFollowing(USERNAME_USER);
         userList = service.listFollowing(USERNAME_ADMIN);
         Assert.assertEquals(1, userList.size());
         Assert.assertEquals(USERNAME_USER, userList.get(0).getUsername());
@@ -198,9 +203,9 @@ public class UserServiceTest extends AbstractGogsTest {
         service.unfollow(USERNAME_USER);
     }
 
-    @Test(expected = GogsClientException.class)
+    @Test
     public void listFollowingI() throws Exception {
-        service.listFollowing(USERNAME_UNKNOWN);
+        Assert.assertTrue(service.listFollowing(USERNAME_UNKNOWN).size() == 0);
     }
 
     @Test
@@ -221,9 +226,9 @@ public class UserServiceTest extends AbstractGogsTest {
         service.unfollow(USERNAME_USER);
     }
 
-    @Test(expected = GogsClientException.class)
+    @Test
     public void listFollowersI() throws Exception {
-        service.listFollowers(USERNAME_UNKNOWN);
+        Assert.assertTrue(service.listFollowers(USERNAME_UNKNOWN).size() == 0);
     }
 
     @Test
@@ -231,20 +236,20 @@ public class UserServiceTest extends AbstractGogsTest {
         UserService service = new UserService(API_USER);
         service.follow(USERNAME_ADMIN);
 
-        service.checkFollowing(USERNAME_ADMIN);
-        service.checkFollowing(USERNAME_USER, USERNAME_ADMIN);
+        Assert.assertTrue(service.checkFollowing(USERNAME_ADMIN));
+        Assert.assertTrue(service.checkFollowing(USERNAME_USER, USERNAME_ADMIN));
 
         service.unfollow(USERNAME_ADMIN);
     }
 
-    @Test(expected = GogsClientException.class)
+    @Test
     public void checkFollowingI() throws Exception {
-        service.checkFollowing(USERNAME_UNKNOWN);
+        Assert.assertFalse(service.checkFollowing(USERNAME_UNKNOWN));
     }
 
-    @Test(expected = GogsClientException.class)
+    @Test
     public void checkFollowingI2() throws Exception {
-        service.checkFollowing(USERNAME_USER, USERNAME_UNKNOWN);
+        Assert.assertFalse(service.checkFollowing(USERNAME_USER, USERNAME_UNKNOWN));
     }
 
     @Test
@@ -266,14 +271,15 @@ public class UserServiceTest extends AbstractGogsTest {
 
     @Test
     public void addEmail() throws Exception {
+        String id = UUID.randomUUID().toString();
         EmailList emailList = new EmailList();
-        emailList.getEmails().add("test@aye-solutions.de");
+        emailList.getEmails().add(id + "@aye-solutions.de");
 
         UserService service = new UserService(API_USER);
         List<Email> newEmailList = service.addEmail(emailList);
 
         Assert.assertEquals(1, newEmailList.size());
-        Assert.assertEquals("test@aye-solutions.de", newEmailList.get(0).getEmail());
+        Assert.assertEquals(id + "@aye-solutions.de", newEmailList.get(0).getEmail());
 
         service.deleteEmail(emailList);
     }
@@ -296,21 +302,11 @@ public class UserServiceTest extends AbstractGogsTest {
         service.unfollow(USERNAME_ADMIN);
     }
 
-    @Test(expected = GogsClientException.class)
-    public void followI() throws Exception {
-        service.follow(USERNAME_UNKNOWN);
-    }
-
     @Test
     public void unfollow() throws Exception {
         UserService service = new UserService(API_USER);
+        service.follow(USERNAME_ADMIN);
         service.unfollow(USERNAME_ADMIN);
-        service.unfollow(USERNAME_ADMIN);
-    }
-
-    @Test(expected = GogsClientException.class)
-    public void unfollowI() throws Exception {
-        service.unfollow(USERNAME_UNKNOWN);
     }
 
     private void checkUser(User user) {

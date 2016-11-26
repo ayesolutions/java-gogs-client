@@ -1,7 +1,6 @@
 package de.ayesolutions.gogs.client.service;
 
 import de.ayesolutions.gogs.client.AbstractGogsTest;
-import de.ayesolutions.gogs.client.GogsClientException;
 import de.ayesolutions.gogs.client.model.Organization;
 import de.ayesolutions.gogs.client.model.Team;
 import de.ayesolutions.gogs.client.model.User;
@@ -69,7 +68,7 @@ public class AdminServiceTest extends AbstractGogsTest {
         teamId = organizationService.listTeams(organizationName).get(0).getId().toString();
     }
 
-    @Test(expected = GogsClientException.class)
+    @Test
     public void createOrganizationInvalid() {
         Assert.assertNull(service.createOrganization(USERNAME_UNKNOWN, dummyOrganization));
     }
@@ -105,11 +104,6 @@ public class AdminServiceTest extends AbstractGogsTest {
         service.deleteUser(userId);
     }
 
-    @Test(expected = GogsClientException.class)
-    public void deleteUserInvalid() {
-        service.deleteUser(userId);
-    }
-
     @Test
     public void createTeam() throws Exception {
         Team team = service.createTeam(organizationName, dummyTeam);
@@ -125,20 +119,10 @@ public class AdminServiceTest extends AbstractGogsTest {
         service.deleteTeamMember(teamId, USERNAME_USER);
     }
 
-    @Test(expected = GogsClientException.class)
-    public void addTeamMemberInvalid() throws Exception {
-        service.addTeamMember(teamId, USERNAME_UNKNOWN);
-    }
-
     @Test
     public void deleteTeamMember() throws Exception {
         service.addTeamMember(teamId, USERNAME_USER);
         service.deleteTeamMember(teamId, USERNAME_USER);
-    }
-
-    @Test(expected = GogsClientException.class)
-    public void deleteTeamMemberInvalid() throws Exception {
-        service.deleteTeamMember(teamId, USERNAME_UNKNOWN);
     }
 
     public static void checkOrganization(Organization organization) {

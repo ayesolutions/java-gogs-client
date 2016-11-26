@@ -5,10 +5,11 @@ import de.ayesolutions.gogs.client.model.Organization;
 import de.ayesolutions.gogs.client.model.Team;
 
 import javax.ws.rs.core.GenericType;
+import java.util.Collections;
 import java.util.List;
 
 /**
- * gogs organization service call class.
+ * service class for organization management.
  *
  * @author Christian Aye - c.aye@aye-solutions.de
  */
@@ -31,8 +32,10 @@ public class OrganizationService extends BaseService {
      * @return list of organizations.
      */
     public List<Organization> listOrganisations() {
-        return getClient().get(new GenericType<List<Organization>>() {
+        List<Organization> list = getClient().get(new GenericType<List<Organization>>() {
         }, "user", "orgs");
+
+        return list != null ? list : Collections.emptyList();
     }
 
     /**
@@ -43,9 +46,11 @@ public class OrganizationService extends BaseService {
      * @param username name of user.
      * @return list of organizations.
      */
-    public List<Organization> listOrganisations(final String username) {
-        return getClient().get(new GenericType<List<Organization>>() {
+    public List<Organization> listOrganisations(String username) {
+        List<Organization> list = getClient().get(new GenericType<List<Organization>>() {
         }, "users", username, "orgs");
+
+        return list != null ? list : Collections.emptyList();
     }
 
     /**
@@ -56,7 +61,7 @@ public class OrganizationService extends BaseService {
      * @param organizationName name of organization.
      * @return organization.
      */
-    public Organization getOrganization(final String organizationName) {
+    public Organization getOrganization(String organizationName) {
         return getClient().get(Organization.class, "orgs", organizationName);
     }
 
@@ -66,9 +71,10 @@ public class OrganizationService extends BaseService {
      * PATCH /api/v1/orgs/:orgname
      *
      * @param organizationName name of organization.
+     * @param organization     organization.
      * @return organization.
      */
-    public Organization updateOrganization(final String organizationName, final Organization organization) {
+    public Organization updateOrganization(String organizationName, Organization organization) {
         return getClient().patch(Organization.class, organization, "orgs", organizationName);
     }
 
@@ -80,8 +86,10 @@ public class OrganizationService extends BaseService {
      * @param organizationName name of organization.
      * @return list of teams.
      */
-    public List<Team> listTeams(final String organizationName) {
-        return getClient().get(new GenericType<List<Team>>() {
+    public List<Team> listTeams(String organizationName) {
+        List<Team> list = getClient().get(new GenericType<List<Team>>() {
         }, "orgs", organizationName, "teams");
+
+        return list != null ? list : Collections.emptyList();
     }
 }

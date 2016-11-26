@@ -1,7 +1,6 @@
 package de.ayesolutions.gogs.client.service;
 
 import de.ayesolutions.gogs.client.AbstractGogsTest;
-import de.ayesolutions.gogs.client.GogsClientException;
 import de.ayesolutions.gogs.client.model.Organization;
 import de.ayesolutions.gogs.client.model.Team;
 import org.junit.Assert;
@@ -50,9 +49,9 @@ public class OrganizationServiceTest extends AbstractGogsTest {
         Assert.assertEquals(0, organizationList.size());
     }
 
-    @Test(expected = GogsClientException.class)
+    @Test
     public void listOrganisationsInvalid() throws Exception {
-        service.listOrganisations(USERNAME_UNKNOWN);
+        Assert.assertTrue(service.listOrganisations(USERNAME_UNKNOWN).size() == 0);
     }
 
     @Test
@@ -61,7 +60,7 @@ public class OrganizationServiceTest extends AbstractGogsTest {
         Assert.assertNotNull(organization);
     }
 
-    @Test(expected = GogsClientException.class)
+    @Test
     public void getOrganizationInvalid() throws Exception {
         Assert.assertNull(service.getOrganization(USERNAME_UNKNOWN));
     }
@@ -74,7 +73,7 @@ public class OrganizationServiceTest extends AbstractGogsTest {
 
     }
 
-    @Test(expected = GogsClientException.class)
+    @Test
     public void updateOrganizationInvalid() throws Exception {
         Assert.assertNull(service.updateOrganization(USERNAME_UNKNOWN, dummyOrganization));
     }

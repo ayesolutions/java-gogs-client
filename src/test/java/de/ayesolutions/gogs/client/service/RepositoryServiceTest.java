@@ -16,6 +16,8 @@ import java.util.UUID;
  */
 public class RepositoryServiceTest extends AbstractGogsTest {
 
+    private RepositoryService service = new RepositoryService(API_USER);
+
     private WebHook dummyWebHook;
 
     private CreateRepository dummyCreateRepository;
@@ -41,25 +43,21 @@ public class RepositoryServiceTest extends AbstractGogsTest {
 
     @Test
     public void listRepositories() throws Exception {
-        RepositoryService service = new RepositoryService(API_USER);
-
         Repository repository = service.createRepository(dummyCreateRepository);
         Assert.assertNotNull(repository);
 
         List<Repository> repositoryList = service.listRepositories();
         Assert.assertEquals(1, repositoryList.size());
 
-        Assert.assertTrue(service.deleteRepository(USERNAME_USER, REPOSITORY_NAME));
+        service.deleteRepository(USERNAME_USER, REPOSITORY_NAME);
     }
 
     @Test
     public void createRepository() throws Exception {
-        RepositoryService service = new RepositoryService(API_USER);
-
         Repository repository = service.createRepository(dummyCreateRepository);
         Assert.assertNotNull(repository);
 
-        Assert.assertTrue(service.deleteRepository(USERNAME_USER, REPOSITORY_NAME));
+        service.deleteRepository(USERNAME_USER, REPOSITORY_NAME);
     }
 
     @Test
@@ -70,15 +68,13 @@ public class RepositoryServiceTest extends AbstractGogsTest {
 
     @Test
     public void search() throws Exception {
-        RepositoryService service = new RepositoryService(API_USER);
-
         Repository repository = service.createRepository(dummyCreateRepository);
         Assert.assertNotNull(repository);
 
         List<Repository> repositoryList = service.search(REPOSITORY_NAME, 0, 1);
         Assert.assertEquals(1, repositoryList.size());
 
-        Assert.assertTrue(service.deleteRepository(USERNAME_USER, REPOSITORY_NAME));
+        service.deleteRepository(USERNAME_USER, REPOSITORY_NAME);
     }
 
     @Test
@@ -89,32 +85,25 @@ public class RepositoryServiceTest extends AbstractGogsTest {
 
     @Test
     public void getRepository() throws Exception {
-        RepositoryService service = new RepositoryService(API_USER);
-
         Repository repository = service.createRepository(dummyCreateRepository);
         Assert.assertNotNull(repository);
 
         repository = service.getRepository(USERNAME_USER, REPOSITORY_NAME);
         Assert.assertNotNull(repository);
 
-        Assert.assertTrue(service.deleteRepository(USERNAME_USER, REPOSITORY_NAME));
+        service.deleteRepository(USERNAME_USER, REPOSITORY_NAME);
     }
 
     @Test
     public void deleteRepository() throws Exception {
-        RepositoryService service = new RepositoryService(API_USER);
-
         Repository repository = service.createRepository(dummyCreateRepository);
         Assert.assertNotNull(repository);
 
-        Assert.assertTrue(service.deleteRepository(USERNAME_USER, REPOSITORY_NAME));
-        Assert.assertFalse(service.deleteRepository(USERNAME_USER, USERNAME_UNKNOWN));
+        service.deleteRepository(USERNAME_USER, REPOSITORY_NAME);
     }
 
     @Test
     public void listWebHooks() throws Exception {
-        RepositoryService service = new RepositoryService(API_USER);
-
         Repository repository = service.createRepository(dummyCreateRepository);
         Assert.assertNotNull(repository);
 
@@ -124,14 +113,12 @@ public class RepositoryServiceTest extends AbstractGogsTest {
         List<WebHook> webHookList = service.listWebHooks(USERNAME_USER, REPOSITORY_NAME);
         Assert.assertEquals(1, webHookList.size());
 
-        Assert.assertTrue(service.deleteWebHook(USERNAME_USER, REPOSITORY_NAME, webHook.getId()));
-        Assert.assertTrue(service.deleteRepository(USERNAME_USER, REPOSITORY_NAME));
+        service.deleteWebHook(USERNAME_USER, REPOSITORY_NAME, webHook.getId());
+        service.deleteRepository(USERNAME_USER, REPOSITORY_NAME);
     }
 
     @Test
     public void createWebHook() throws Exception {
-        RepositoryService service = new RepositoryService(API_USER);
-
         Repository repository = service.createRepository(dummyCreateRepository);
         Assert.assertNotNull(repository);
 
@@ -140,14 +127,12 @@ public class RepositoryServiceTest extends AbstractGogsTest {
 
         Assert.assertNull(service.createWebHook(USERNAME_UNKNOWN, REPOSITORY_NAME, dummyWebHook));
 
-        Assert.assertTrue(service.deleteWebHook(USERNAME_USER, REPOSITORY_NAME, webHook.getId()));
-        Assert.assertTrue(service.deleteRepository(USERNAME_USER, REPOSITORY_NAME));
+        service.deleteWebHook(USERNAME_USER, REPOSITORY_NAME, webHook.getId());
+        service.deleteRepository(USERNAME_USER, REPOSITORY_NAME);
     }
 
     @Test
     public void updateWebHook() throws Exception {
-        RepositoryService service = new RepositoryService(API_USER);
-
         Repository repository = service.createRepository(dummyCreateRepository);
         Assert.assertNotNull(repository);
 
@@ -156,8 +141,8 @@ public class RepositoryServiceTest extends AbstractGogsTest {
 
         Assert.assertNotNull(service.updateWebHook(USERNAME_USER, REPOSITORY_NAME, webHook));
 
-        Assert.assertTrue(service.deleteWebHook(USERNAME_USER, REPOSITORY_NAME, webHook.getId()));
-        Assert.assertTrue(service.deleteRepository(USERNAME_USER, REPOSITORY_NAME));
+        service.deleteWebHook(USERNAME_USER, REPOSITORY_NAME, webHook.getId());
+        service.deleteRepository(USERNAME_USER, REPOSITORY_NAME);
     }
 
     @Test
@@ -170,10 +155,9 @@ public class RepositoryServiceTest extends AbstractGogsTest {
         WebHook webHook = service.createWebHook(USERNAME_USER, REPOSITORY_NAME, dummyWebHook);
         Assert.assertNotNull(webHook.getId());
 
-        Assert.assertTrue(service.deleteWebHook(USERNAME_USER, REPOSITORY_NAME, webHook.getId()));
-        Assert.assertFalse(service.deleteWebHook(USERNAME_UNKNOWN, DEFAULT, webHook.getId()));
+        service.deleteWebHook(USERNAME_USER, REPOSITORY_NAME, webHook.getId());
+        service.deleteRepository(USERNAME_USER, REPOSITORY_NAME);
 
-        Assert.assertTrue(service.deleteRepository(USERNAME_USER, REPOSITORY_NAME));
     }
 
     @Test

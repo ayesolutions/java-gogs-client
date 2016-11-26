@@ -1,17 +1,24 @@
 package de.ayesolutions.gogs.client.service;
 
 import de.ayesolutions.gogs.client.GogsClient;
-import de.ayesolutions.gogs.client.GogsClientException;
 import de.ayesolutions.gogs.client.model.Organization;
+import de.ayesolutions.gogs.client.model.PublicKey;
 import de.ayesolutions.gogs.client.model.Team;
 import de.ayesolutions.gogs.client.model.User;
 
 /**
+ * service class for administration.
+ *
  * @author Christian Aye - c.aye@aye-solutions.de
  */
 public class AdminService extends BaseService {
 
-    public AdminService(GogsClient client) {
+    /**
+     * default constructor.
+     *
+     * @param client gogs http client.
+     */
+    public AdminService(final GogsClient client) {
         super(client);
     }
 
@@ -22,9 +29,8 @@ public class AdminService extends BaseService {
      *
      * @param user user.
      * @return created user.
-     * @throws GogsClientException
      */
-    public User createUser(final User user) throws GogsClientException {
+    public User createUser(User user) {
         return getClient().post(User.class, user, "admin", "users");
     }
 
@@ -36,9 +42,8 @@ public class AdminService extends BaseService {
      * @param username username.
      * @param user     user
      * @return updated user.
-     * @throws GogsClientException
      */
-    public User updateUser(final String username, final User user) throws GogsClientException {
+    public User updateUser(String username, User user) {
         return getClient().patch(User.class, user, "admin", "users", username);
     }
 
@@ -48,10 +53,8 @@ public class AdminService extends BaseService {
      * DELETE /api/v1/admin/users/:username
      *
      * @param username username.
-     * @return true if successful otherwise false.
-     * @throws GogsClientException
      */
-    public void deleteUser(final String username) throws GogsClientException {
+    public void deleteUser(String username) {
         getClient().delete("admin", "users", username);
     }
 
@@ -63,10 +66,22 @@ public class AdminService extends BaseService {
      * @param username     name of user.
      * @param organization organization.
      * @return created organization.
-     * @throws GogsClientException
      */
-    public Organization createOrganization(final String username, final Organization organization) throws GogsClientException {
+    public Organization createOrganization(String username, Organization organization) {
         return getClient().post(Organization.class, organization, "admin", "users", username, "orgs");
+    }
+
+    /**
+     * add new public key to specified user.
+     * <p>
+     * POST /api/v1/admin/users/:username/keys
+     *
+     * @param username  name of user.
+     * @param publicKey public key.
+     * @return added public key.
+     */
+    public PublicKey addPublicKey(String username, PublicKey publicKey) {
+        return getClient().post(PublicKey.class, publicKey, "admin", "users", username, "keys");
     }
 
     /**
@@ -77,9 +92,8 @@ public class AdminService extends BaseService {
      * @param organizationName organization name.
      * @param team             team.
      * @return created team.
-     * @throws GogsClientException
      */
-    public Team createTeam(final String organizationName, final Team team) throws GogsClientException {
+    public Team createTeam(String organizationName, Team team) {
         return getClient().post(Team.class, team, "admin", "orgs", organizationName, "teams");
     }
 
@@ -90,10 +104,8 @@ public class AdminService extends BaseService {
      *
      * @param teamId   team id.
      * @param username username.
-     * @return true if successful otherwise false.
-     * @throws GogsClientException
      */
-    public void addTeamMember(final String teamId, final String username) throws GogsClientException {
+    public void addTeamMember(String teamId, String username) {
         getClient().put(Void.class, null, "admin", "teams", teamId, "members", username);
     }
 
@@ -104,10 +116,32 @@ public class AdminService extends BaseService {
      *
      * @param teamId   team id.
      * @param username username.
-     * @return true if successful otherwise false.
-     * @throws GogsClientException
      */
-    public void deleteTeamMember(final String teamId, final String username) throws GogsClientException {
+    public void deleteTeamMember(String teamId, String username) {
         getClient().delete("admin", "teams", teamId, "members", username);
+    }
+
+    /**
+     * add team to another repository.
+     * <p>
+     * PUT /api/v1/admin/teams/:teamId/repos/:reponame
+     *
+     * @param teamId         team id.
+     * @param repositoryName repository name.
+     */
+    public void addTeamRepository(String teamId, String repositoryName) {
+        getClient().put(Void.class, "", "admin", "teams", teamId, "repos", repositoryName);
+    }
+
+    /**
+     * delete team from repository.
+     * <p>
+     * DELETE /api/v1/admin/teams/:teamId/repos/:reponame
+     *
+     * @param teamId         team id.
+     * @param repositoryName repository name.
+     */
+    public void deleteTeamRepository(String teamId, String repositoryName) {
+        getClient().delete(Void.class, "admin", "teams", teamId, "repos", repositoryName);
     }
 }

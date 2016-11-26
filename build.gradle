@@ -5,13 +5,9 @@ buildscript {
     }
 }
 
-plugins {
-    id 'de.aaschmid.cpd' version '1.0'
-}
-
 group = "de.ayesolutions.gogs"
 version = "1.0-SNAPSHOT"
-description = "Java REST client for Gogs Service"
+description = "Go Git Service API client for Java"
 
 apply plugin: 'java'
 apply plugin: 'groovy'
@@ -22,7 +18,6 @@ apply plugin: 'jdepend'
 apply plugin: 'findbugs'
 apply plugin: 'checkstyle'
 apply plugin: 'jacoco'
-apply plugin: 'cpd'
 apply plugin: 'maven-publish'
 
 test {
@@ -38,6 +33,7 @@ findbugs {
 }
 
 checkstyle {
+    toolVersion = '7.3'
     showViolations = true
     ignoreFailures = true
 }
@@ -49,15 +45,8 @@ jacocoTestReport {
 }
 
 repositories {
-	jcenter()
+    jcenter()
     mavenCentral()
-}
-
-cpdCheck {
-    reports {
-        xml.enabled = true
-    }
-    source = sourceSets.main.allJava
 }
 
 publishing {
@@ -78,15 +67,12 @@ publishing {
 }
 
 dependencies {
-    compile group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.4.7'
-
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.21'
     compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.21'
 
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.5'
     compile group: 'org.glassfish.jersey.core', name: 'jersey-client', version: '2.24.1'
     compile group: 'org.glassfish.jersey.media', name: 'jersey-media-json-jackson', version: '2.24.1'
-    compile group: 'org.glassfish.jersey.connectors', name: 'jersey-apache-connector', version: '2.24.1'
 
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }

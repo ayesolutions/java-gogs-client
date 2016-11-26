@@ -5,9 +5,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Date;
 
 /**
+ * repository model class.
+ *
  * @author Christian Aye - c.aye@aye-solutions.de
  */
 public class Repository {
+
+    /**
+     * repository permission class.
+     */
     public class RepositoryPermission {
         private boolean admin;
 
