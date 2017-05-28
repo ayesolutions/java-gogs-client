@@ -1,10 +1,12 @@
 package de.ayesolutions.gogs.client.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @author Christian Aye - c.aye@aye-solutions.de
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class User {
 
     private Long id;
