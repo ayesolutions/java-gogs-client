@@ -22,7 +22,7 @@ This package is hosted on Bintray
         <dependency>
             <groupId>de.ayesolutions.gogs</groupId>
             <artifactId>gogs-client</artifactId>
-            <version>1.0-RELEASE</version>
+            <version>1.0</version>
         </dependency>
     </dependencies>
 

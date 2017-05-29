@@ -1,9 +1,25 @@
+buildscript {
+    ext {
+        junitVersion = '4.12'
+        slf4jVersion = '1.7.25'
+        commonsLangVersion = '3.5'
+        jerseyVersion = '2.25.1'
+        checkstyleVersion = '7.3'
+        jacocoVersion = '0.7.9'
+    }
+
+    repositories {
+        mavenCentral()
+    }
+}
+
 plugins {
-    id 'com.github.kt3k.coveralls' version '2.6.3'
+    id 'com.github.kt3k.coveralls' version '2.8.1'
+    id "com.jfrog.bintray" version "1.7.3"
 }
 
 group = "de.ayesolutions.gogs"
-version = "1.0-SNAPSHOT"
+version = "1.0"
 description = "Go Git Service API client for Java"
 
 apply plugin: 'java'
@@ -16,13 +32,54 @@ apply plugin: 'findbugs'
 apply plugin: 'checkstyle'
 apply plugin: 'jacoco'
 apply plugin: 'maven-publish'
+apply plugin: 'java-library'
+
+publishing {
+    publications {
+        MyPublication(MavenPublication) {
+            from components.java
+            groupId 'de.ayesolutions.gogs'
+            artifactId 'client'
+            version '1.0'
+        }
+    }
+}
+
+bintray {
+    user = System.getenv('MAVEN_USER')
+    key = System.getenv('MAVEN_PASS')
+    publish = true
+    override = true
+
+    publications = ['MyPublication']
+
+    pkg {
+        repo = 'maven'
+        name = 'java-gogs-client'
+        userOrg = 'ayesolutions'
+        licenses = ['MIT']
+        vcsUrl = 'https://github.com/ayesolutions/java-gogs-client.git'
+        desc = 'Go Git Service API client for Java'
+        websiteUrl = 'https://github.com/ayesolutions/java-gogs-client'
+        issueTrackerUrl = 'https://github.com/ayesolutions/java-gogs-client/issues'
+        publicDownloadNumbers = true
+        githubRepo = 'ayesolutions/java-gogs-client'
+        githubReleaseNotesFile = 'README.md'
+
+        version {
+            name = '1.0'
+            released = new Date()
+            vcsTag = '1.0'
+        }
+    }
+}
 
 test {
     reports.html.enabled = false
 }
 
 jacoco {
-    toolVersion = "0.7.6.201602180812"
+    toolVersion = jacocoVersion
 }
 
 findbugs {
@@ -31,7 +88,7 @@ findbugs {
 }
 
 checkstyle {
-    toolVersion = '7.3'
+    toolVersion = checkstyleVersion
     showViolations = true
     ignoreFailures = true
     checkstyleTest.enabled = false
@@ -40,6 +97,7 @@ checkstyle {
 jacocoTestReport {
     reports {
         xml.enabled true
+        html.enabled = true
     }
 }
 
@@ -47,32 +105,15 @@ repositories {
     mavenCentral()
 }
 
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
-        }
-    }
-    repositories {
-        maven {
-            credentials {
-                username System.getenv('MAVEN_USER')
-                password System.getenv('MAVEN_PASS')
-            }
-            url "https://api.bintray.com/maven/ayesolutions/maven/java-gogs-client/;publish=1"
-        }
-    }
-}
-
 dependencies {
-    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.21'
-    compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.21'
+    compile group: 'org.slf4j', name: 'slf4j-api', version: slf4jVersion
+    compile group: 'org.slf4j', name: 'slf4j-simple', version: slf4jVersion
 
-    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.5'
-    compile group: 'org.glassfish.jersey.core', name: 'jersey-client', version: '2.24.1'
-    compile group: 'org.glassfish.jersey.media', name: 'jersey-media-json-jackson', version: '2.24.1'
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: commonsLangVersion
+    compile group: 'org.glassfish.jersey.core', name: 'jersey-client', version: jerseyVersion
+    compile group: 'org.glassfish.jersey.media', name: 'jersey-media-json-jackson', version: jerseyVersion
 
-    testCompile group: 'junit', name: 'junit', version: '4.12'
+    testCompile group: 'junit', name: 'junit', version: junitVersion
 }
 
 tasks.coveralls {
