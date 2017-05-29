@@ -28,6 +28,8 @@ public class OrganizationServiceTest extends AbstractGogsTest {
 
     @BeforeClass
     public static void setUp() {
+        checkTestServer();
+
         dummyOrganization = new Organization();
         dummyOrganization.setUsername(organizationName);
         dummyOrganization.setFullName(organizationName + " - test");

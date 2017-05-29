@@ -1,7 +1,10 @@
 package de.ayesolutions.gogs.client;
 
 import de.ayesolutions.gogs.client.model.AccessToken;
+import org.junit.Assume;
+import org.junit.Before;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.UUID;
 
@@ -34,6 +37,20 @@ public abstract class AbstractGogsTest {
 
     public AbstractGogsTest() {
         createDummyObjects();
+    }
+
+    @Before
+    public void beforeMethod() {
+        checkTestServer();
+    }
+
+    public static void checkTestServer() {
+        try {
+            API_URI.toURL().openConnection().connect();
+        } catch (IOException e) {
+            Assume.assumeTrue(false);
+        }
+        Assume.assumeTrue(true);
     }
 
     public abstract void createDummyObjects();

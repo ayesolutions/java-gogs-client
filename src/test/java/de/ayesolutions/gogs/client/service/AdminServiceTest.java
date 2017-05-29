@@ -38,6 +38,8 @@ public class AdminServiceTest extends AbstractGogsTest {
 
     @BeforeClass
     public static void setUp() {
+        checkTestServer();
+
         organizationName = UUID.randomUUID().toString();
 
         dummyOrganization = new Organization();
